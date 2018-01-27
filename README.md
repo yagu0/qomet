@@ -36,7 +36,7 @@ So under normal circumstances it's also impossible for a student to continue the
 
 Version "standard classroom": some potential cheating ways,
  - headless browsers with renamed http-user-agent; difficult to counter with 100% confidence
- - block JS script using e.g. μblock, then re-inject the script cleaned of listeners
+ - block JS script using e.g. [uBlock Origin](https://github.com/gorhill/uBlock), then re-inject the script cleaned of listeners
  - intercept HTTP response to "start quiz" signal, re-compose the page without listeners and run
 
 The only way to garanty zero internet cheat is to use some SELinux configuration in kiosk mode
