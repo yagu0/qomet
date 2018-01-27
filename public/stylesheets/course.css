@@ -1,0 +1,56 @@
+h4.title {
+	cursor: pointer;
+	background-color: lightgrey;
+}
+
+tr.assessment {
+	cursor: pointer;
+}
+
+input#password {
+	width: auto;
+}
+
+table.result {
+	cursor: pointer;
+}
+
+tr.stats {
+	padding-top: 10px;
+}
+
+#questionList {
+	margin: 20px 5px;
+}
+
+.question {
+	margin: 20px 0;
+}
+
+.question .choiceCorrect {
+	background-color: lightgreen;
+}
+
+.question .wording {
+	margin-bottom: 10px;
+}
+
+.question .option {
+	margin-left: 15px;
+}
+
+.question p {
+	margin-top: 10px;
+}
+
+.questionInactive {
+	background-color: lightgrey;
+}
+
+.introduction {
+	margin-top: 20px;
+}
+
+.conclusion {
+	margin-bottom: 20px;
+}

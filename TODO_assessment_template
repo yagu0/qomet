@@ -1,0 +1,36 @@
+TODO: format général TXT: (compilé en JSON)
+
+10 (time)
+1 (fixed)
+Introduction (multiline, from third line ; \n --> <br>)
+
+[Intro q1, multiline]
+
+q1 txt
+
+answer q1 (multiline txt)
+
+q2 intro (multiline)
+
+  q2.1 [intro optional]
+
+	q2.1 txt
+
+	q2.1 options:
+	+ good
+	- bad
+	- bad ...etc
+
+	answer (integer array, one line)
+
+  q2.2 [intro optional]
+
+	q2.2 txt
+
+	answer (html multiline)
+
+Conclusion (last block)
+
+=====
+
+Seems that GUI would be easier, then summary in YAML file + parse from YAML

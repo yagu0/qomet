@@ -1,0 +1,24 @@
+## Prerequisites
+
+node (v.6.10+), npm, mongo (v3.4+)
+
+msmtp: for sending e-mails
+
+git-fat: for large binary objects
+
+## Local installation
+
+First of all:
+    npm i
+
+Copy the files config/\*.js.dist without .dist extension.
+Adjust their content to your liking (especially DB name and user & mail settings).
+
+Then start mongodb service, create a database and user corresponding to the parameters,
+and run the mongo script database.js in setup/ folder:
+    load("setup/database.js") [from mongo shell]
+
+All should be good now:
+    npm start
+
+Note the "student.csv.sample" file in this folder, to test features locally.

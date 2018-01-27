@@ -1,0 +1,197 @@
+extends withQuestions
+
+block append stylesheets
+	link(rel="stylesheet" href="/stylesheets/course.css")
+
+block content
+	.container#course
+		if teacher
+			#newAssessment.modal
+				.modal-content
+					form(@submit.prevent="addAssessment")
+						.input-field
+							input#assessmentName(type="text" v-model="newAssessment.name" required)
+							label(for="assessmentName") Name
+				.modal-footer
+					.center-align
+						a.waves-effect.waves-light.btn(href="#!" @click="addAssessment()")
+							span Submit
+							i.material-icons.right send
+			#assessmentSettings.modal
+				.modal-content
+					form
+						p
+							input#active(type="checkbox" v-model="assessment.active")
+							label(for="active") Active
+						p
+							input#secure(name="status" type="radio" value="secure" v-model="assessment.mode")
+							label(for="secure") Exam mode, secured (class only)
+						p
+							input#exam(name="status" type="radio" value="exam" v-model="assessment.mode")
+							label(for="exam") Exam mode, free (class only)
+						p
+							input#open(name="status" type="radio" value="open" v-model="assessment.mode")
+							label(for="open") Open to everyone
+						p
+							input#fixed(type="checkbox" v-model="assessment.fixed")
+							label(for="fixed") Fixed questions order
+						p
+							input#displayOne(name="display" type="radio" value="one" v-model="assessment.display")
+							label(for="displayOne") One question at a time
+						p
+							input#displayAll(name="display" type="radio" value="all" v-model="assessment.display")
+							label(for="displayAll") Display all questions
+						.input-field
+							input#time(type="number" v-model.number="assessment.time")
+							label(for="time") Time (minutes)
+				.modal-footer
+					.center-align
+						a.modal-action.modal-close.waves-effect.waves-light.btn-flat(href="#!") Done
+			#assessmentEdit.modal
+				.modal-content
+					form
+						.input-field
+							textarea#introduction.materialize-textarea(v-model="assessment.introduction")
+							label(for="introduction") Introduction
+						.input-field
+							textarea#assessmentEdition.materialize-textarea(v-model="assessmentText")
+							label(for="assessmentEdition") Assessment in text format
+						.input-field
+							textarea#conclusion.materialize-textarea(v-model="assessment.conclusion")
+							label(for="conclusion") Conclusion
+				.modal-footer
+					.center-align
+						a.modal-action.modal-close.waves-effect.waves-light.btn-flat(href="#!") Done
+			#gradeSettings.modal
+				.modal-content
+					form(@submit.prevent="computeGrades")
+						.input-field
+							input#points(type="number" v-model.number="settings.totalPoints" required)
+							label(for="points") Total points
+						p
+							input#partial(type="checkbox" v-model="settings.halfPoint")
+							label(for="partial") Half point for partial answers? (&ge; 50%)
+						p
+							input#malus(type="checkbox" v-model="settings.zeroSum")
+							label(for="malus") Lose points on wrong answers? ("Zero-sum" game)
+				.modal-footer
+					.center-align
+						a.modal-action.modal-close.waves-effect.waves-light.btn(href="#!" @click="computeGrades()")
+							span Compute
+							i.material-icons.right send
+			#detailedGrades.modal
+				.modal-content
+					table
+						thead
+							tr
+								th Number
+								th(v-for="assessment in assessmentArray") {{ assessment.name }}
+						tbody
+							tr.grade(v-for="student in studentList(group)")
+								td {{ student.number }}
+								td(v-for="(assessment,i) in assessmentArray" @click="togglePresence(student.number,i)") {{ grade(i,student.number) }}
+				.modal-footer
+					.center-align
+						a.modal-action.modal-close.waves-effect.waves-light.btn-flat(href="#!") Close
+		.row(v-show="mode=='view'")
+			.col.s12.m10.offset-m1.l8.offset-l2.xl6.offset-xl3
+				if teacher
+					h4.title(@click="toggleDisplay('students')") Students
+					.card(v-show="display=='students'")
+						.center-align
+							input.hide#upload(type="file" @change="upload")
+							button.on-left.waves-effect.waves-light.btn(@click="uploadTrigger()") Import
+						table
+							thead
+								tr
+									th Number
+									th Forename
+									th Name
+									th Group
+							tbody
+								tr.student(v-for="student in studentList(0)")
+									td {{ student.number }}
+									td {{ student.forename }}
+									td {{ student.name }}
+									td {{ student.group }}
+				h4.title(@click="toggleDisplay('assessments')") Assessments
+				.card(v-show="display=='assessments'")
+					if teacher
+						.center-align
+							a.on-left.waves-effect.waves-light.btn.modal-trigger(href="#newAssessment") New assessment
+							input#password(type="password" v-model="monitorPwd" @keyup.enter="setPassword" placeholder="Password" title="Monitoring password")
+					table
+						thead
+							tr
+								th Name
+								th Coefficient
+								th #Questions
+								th Time
+						tbody
+							tr.assessment(v-for="(assessment,i) in assessmentArray" @click.left="actionAssessment(i)" @contextmenu.prevent="deleteAssessment(assessment)")
+								td {{ assessment.name }}
+								td {{ assessment.coefficient }}
+								td {{ assessment.questions.reduce( (a,b) => { return b.active ? a+1 : a; }, 0) }}
+								td {{ assessment.time }}
+				if teacher
+					h4.title(@click="toggleDisplay('grades')") Grades
+					.card(v-show="display=='grades'")
+						.center-align
+							button.on-left.waves-effect.waves-light.btn(@click="gradeSettings()") Settings
+							a#download.hide(href="#" ref="download")
+							button.waves-effect.waves-light.btn(@click="download") Download
+						ul.tabs.tabs-fixed-width
+							li.tab
+								a(href="#group0") All
+							li.tab(v-for="group in groupList()")
+								a(:href="groupId(group,'hash')") G.{{ group }}
+						table.result(:id="groupId(group)" v-for="group in [0].concat(groupList())" @click="showDetails(group)")
+							thead
+								tr
+									th Number
+									th Forename
+									th Name
+									th Final
+							tbody
+								tr.grade(v-for="student in studentList(group)")
+									td {{ student.number }}
+									td {{ student.forename }}
+									td {{ student.name }}
+									td grade...
+									//td {{ grades[student.number].final }}
+								tr.stats
+									td(colspan="4") Stats: range= stdev= mean=
+		if teacher
+			.row(v-show="mode=='edit'")
+				.col.s12.m10.offset-m1.l8.offset-l2.xl6.offset-xl3
+					h4 {{ assessment.name }}
+					.card
+						.center-align
+							button.waves-effect.waves-light.btn.on-left(@click="materialOpenModal('assessmentSettings')") Settings
+							button.waves-effect.waves-light.btn.on-left(@click="materialOpenModal('assessmentEdit')") Content
+							button.waves-effect.waves-light.btn(@click="redirect(assessment.name)") View
+						#questionList
+							.introduction(v-html="assessment.introduction")
+							.question(v-for="(question,i) in assessment.questions" :class="{questionInactive:!question.active}")
+								.wording(v-html="question.wording")
+								.option(v-for="(option,j) in question.options" :class="{choiceCorrect:question.answer.includes(j)}" v-html="option")
+								p
+									input(:id="checkBoxFixedId(i)" type="checkbox" v-model="question.fixed")
+									label.on-left(:for="checkBoxFixedId(i)") Fixed
+									input(:id="checkBoxActiveId(i)" type="checkbox" v-model="question.active")
+									label(:for="checkBoxActiveId(i)") Active
+							.conclusion(v-html="assessment.conclusion")
+						.center-align
+							button.waves-effect.waves-light.btn.on-left(@click="mode='view'") Cancel
+							button.waves-effect.waves-light.btn(@click="updateAssessment") Send
+
+block append javascripts
+	script(src="//cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.6/papaparse.min.js")
+	script(src="/javascripts/utils/sha1.js")
+	script(src="/javascripts/utils/validation.js")
+	script.
+		let assessmentArray = !{JSON.stringify(assessmentArray)};
+		const course = !{JSON.stringify(course)};
+		const initials = "#{initials}";
+		const admin = #{teacher};
+	script(src="/javascripts/course.js")

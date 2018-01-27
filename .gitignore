@@ -1,0 +1,4 @@
+/node_modules/
+*.swp
+/config/parameters.js
+/public/vendor/prism/components/

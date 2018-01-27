@@ -1,0 +1,66 @@
+extends withQuestions
+
+block append stylesheets
+	link(rel="stylesheet" href="/stylesheets/assessment.css")
+	noscript
+		meta(http-equiv="Refresh" content="0; URL=/enablejs")
+
+block rightMenu
+	a#rightButton.btn-floating.btn-large.grey(href=assessment.name + "/monitor")
+		i.material-icons video_label
+
+block content
+	.container#assessment
+		.row
+			#warning.modal
+				.modal-content
+					p Your answer to the current question was sent to the server.
+					p To avoid future unpleasant surprises, please don't
+					ul
+						li resize the window, or
+						li lose window focus.
+				.modal-footer
+					.center-align
+						a.modal-action.modal-close.waves-effect.waves-light.btn-flat(href="#!") Got it!
+		.row
+			.col.s12.m10.offset-m1.l8.offset-l2.xl6.offset-xl3
+				h4= assessment.name
+				#stage0(v-if="stage==0")
+					.card
+						.input-field.inline.on-left
+							label(for="number") Number
+							input#number(type="text" v-model="student.number" @keyup.enter="getStudent()")
+						button.waves-effect.waves-light.btn(@click="getStudent()") Send
+				#stage1(v-if="stage==1")
+					.card
+						if assessment.mode != "open"
+							.input-field.inline.on-left
+								label(for="forename") Forename
+								input#forename(type="text" v-model="student.forename" disabled)
+							.input-field.inline
+								label(for="name") Name
+								input#name(type="text" v-model="student.name" disabled)
+						p
+							if assessment.mode != "open"
+								button.waves-effect.waves-light.btn.on-left(@click="cancelStudent") Cancel
+							button.waves-effect.waves-light.btn(@click="startAssessment") Start!
+				#stage1_2_4(v-if="stage==1 || stage==2 || stage == 4")
+					.card
+						.introduction(v-html="assessment.introduction")
+				#stage2_4(v-if="stage==2 || stage==4")
+					if assessment.time > 0
+						.card
+							.timer.center(v-if="stage==2") {{ countdown }}
+					.card
+						statements(:assessment="assessment" :student="student" :stage="stage" :inputs="inputs" @gameover="endAssessment")
+				#stage3(v-if="stage==3")
+					.card
+						.finish Exam completed &#9786; ...don't close the window!
+				#stage3_4(v-if="stage==3 || stage==4")
+					.card
+						.conclusion(v-html="assessment.conclusion")
+
+block append javascripts
+	script.
+		let assessment = !{JSON.stringify(assessment)};
+	script(src="/javascripts/assessment.js")

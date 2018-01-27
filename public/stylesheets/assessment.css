@@ -1,0 +1,55 @@
+a#rightButton {
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
+.question {
+	margin: 20px 5px;
+	padding: 15px 0;
+}
+
+.question button {
+	display: block;
+	margin: 0 auto 15px auto;
+}
+
+.question label {
+	color: black;
+}
+
+.question .choiceCorrect {
+	background-color: lightgreen;
+}
+
+.question .choiceWrong {
+	background-color: peachpuff;
+}
+
+.question .wording {
+	margin-bottom: 10px;
+}
+
+.question .option {
+	margin-left: 15px;
+}
+
+.question p {
+	margin-top: 10px;
+}
+
+.questionInactive {
+	background-color: lightgrey;
+}
+
+.introduction {
+	padding: 20px 5px;
+}
+
+.conclusion {
+	padding: 20px 5px;
+}
+
+.timer {
+	font-size: 2rem;
+}

@@ -1,0 +1,48 @@
+extends layout
+
+block stylesheets
+	link(rel="stylesheet" href="/stylesheets/courseList.css")
+
+block content
+	.container#courseList
+		if teacher
+			.row
+				// Modal Structure
+				#newCourse.modal
+					.modal-content
+						form(@submit.prevent="submit")
+							.input-field
+								input#code.validate(type="text" v-model="newCourse.code" autofocus required)
+								label(for="code") Code
+							.input-field
+								input#description.validate(type="text" v-model="newCourse.description" required)
+								label(for="description") Description
+					.modal-footer
+						#submit.center-align
+						a.waves-effect.waves-light.btn(href="#!" @click="addCourse()")
+							span Submit
+							i.material-icons.right send
+		.row
+			.col.s12.m10.offset-m1.l8.offset-l2.xl6.offset-xl3
+				.card
+					if teacher
+						// Modal Trigger
+						.center-align
+							a.waves-effect.waves-light.btn.modal-trigger(href="#newCourse") New course
+					table
+						thead
+							tr
+								th Code
+								th Description
+						tbody
+							tr.course(v-for="course in courseArray" @click.left="redirect(course.code)" @contextmenu.prevent="deleteCourse(course)")
+								td {{ course.code }}
+								td(v-html="course.description")
+
+block javascripts
+	script(src="/javascripts/courseList.js")
+	script(src="/javascripts/utils/validation.js")
+	script.
+		let courseArray = !{JSON.stringify(courseArray)};
+		const initials = "#{initials}";
+		const admin = #{teacher};
