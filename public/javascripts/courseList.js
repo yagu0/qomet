@@ -20,7 +20,7 @@ window.onload = function() {
 				if (!admin)
 					return;
 				// modal, fill code and description
-				let error = Validator.checkCode(this.newCourse.code);
+				let error = Validator.checkObject({code:this.newCourse.code}, "Course");
 				if (!!error)
 					return alert(error);
 				else
