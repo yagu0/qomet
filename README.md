@@ -4,7 +4,9 @@
 
 Or "... pour Examens sur inTernet", in french. In english, just revert the acronym:
 
-"sTudents Evaluation with Multiple chOices or Open Questions (or ...inTernet Exams with).
+"sTudents Evaluation with Multiple choices or Open Questions (or ...inTernet Exams with).
+
+Source code of [qomet.auder.net](https://qomet.auder.net)
 
 ## Features
 
