@@ -246,6 +246,8 @@ let V = new Vue({
 		},
 	},
 	mounted: function() {
+		if (assessment.mode == "open")
+			return; //no security needed in open mode
 		window.addEventListener("keydown", e => {
 			// If F12 or ctrl+shift (ways to access devtools)
 			if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey))
@@ -266,12 +268,9 @@ let V = new Vue({
 		Object.defineProperty(div, "id", {
 			get: () => {
 				clearInterval(devtoolsLoop);
-				if (assessment.mode != "open")
-				{
-					if (this.stage == 2)
-						this.endAssessment();
-					document.location.href = "/nodevtools";
-				}
+				if (this.stage == 2)
+					this.endAssessment();
+				document.location.href = "/nodevtools";
 			}
 		});
 	},
