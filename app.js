@@ -31,7 +31,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Before any request, check cookies
 app.use(function(req, res, next) {
 	res.locals.loggedIn = !!req.cookies.token;
-	res.locals.myInitials = req.cookies.myInitials; //may be undefined
+	res.locals.myInitials = req.cookies.initials; //may be undefined
 	next();
 });
 
