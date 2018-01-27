@@ -1,10 +1,9 @@
-# qomet
+# qomet - WARNING: prototype stage
 
 ### Questions Ouvertes ou à options Multiples pour l'Évaluation des éTudiants
 
-Or "... pour Examens sur inTernet", in french.
+Or "... pour Examens sur inTernet", in french. In english, just revert the acronym:
 
-In english, just revert the acronym:
 "sTudents Evaluation with Multiple chOices or Open Questions (or ...inTernet Exams with).
 
 ## Features
@@ -17,6 +16,7 @@ Once a series of exam is over, the teacher can get all grades in CSV format from
 
 *Note:* for now the monitoring + socket part is still unimplemented,
 and exams composition is limited to single question exercises.
+Automatic grades are also not available.
 
 ## Installation
 
@@ -30,7 +30,7 @@ TODO: write tutorial, maybe a demo video.
 Once an assessment is started, it's impossible to quit and restart using another browser,
 because a password stored in cookies need to be sent with every request.
 So under normal circumstances it's also impossible for a student to continue the exam of another.
-(The password is destroyed when exam ends or when the teacher decide to finish assessment).
+(The password is destroyed when exam ends or when the teacher decides to finish assessment).
 
 ## Limitations
 
@@ -39,7 +39,7 @@ Version "standard classroom": some potential cheating ways,
  - block JS script using e.g. μblock, then re-inject the script cleaned of listeners
  - intercept HTTP response to "start quiz" signal, re-compose the page without listeners and run
 
-The only way to garanty 0 internet cheat is to use some SELinux configuration in kiosk mode
+The only way to garanty zero internet cheat is to use some SELinux configuration in kiosk mode
 with just one safe web browser enabled, e.g. [surf](https://surf.suckless.org/).
 Not that more traditional ways of cheating may still be used (phones, talking, signs, memos...)
 
