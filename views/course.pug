@@ -124,13 +124,13 @@ block content
 						thead
 							tr
 								th Name
-								th Coefficient
+								th Mode
 								th #Questions
 								th Time
 						tbody
 							tr.assessment(v-for="(assessment,i) in assessmentArray" @click.left="actionAssessment(i)" @contextmenu.prevent="deleteAssessment(assessment)")
 								td {{ assessment.name }}
-								td {{ assessment.coefficient }}
+								td {{ assessment.mode }}
 								td {{ assessment.questions.reduce( (a,b) => { return b.active ? a+1 : a; }, 0) }}
 								td {{ assessment.time }}
 				if teacher
