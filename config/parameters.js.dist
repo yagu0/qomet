@@ -1,6 +1,6 @@
 var Parameters = {};
 
-// For mail sending. WARNING: *no trailng slash*
+// For mail sending. WARNING: *no trailing slash*
 Parameters.siteURL = "http://localhost";
 
 // Lifespan of a (login) cookie
@@ -18,7 +18,7 @@ Parameters.whitelist = [
 	"another.domain.org",
 ];
 
-// msmtp account name adn address from, to send (login) emails
+// msmtp account name and address from, to send (login) emails
 Parameters.mail = {
 	account: "msmtpAccount",
 	from: "addressFrom",
