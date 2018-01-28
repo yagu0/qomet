@@ -28,14 +28,20 @@ router.get("/login", access.unlogged, (req,res) => {
 
 // Redirection screens when possible cheating attempt detected in exam
 router.get("/enablejs", (req,res) => {
-	res.render("enable-js", {
+	res.render("enablejs", {
 		title: "JS disabled",
 	});
 });
 
-router.get("/nodevtools", (req,res) => {
-	res.render("no-devtools", {
-		title: "Devtools enabled",
+router.get("/fullscreen", (req,res) => {
+	res.render("fullscreen", {
+		title: "Not in fullscreen",
+	});
+});
+
+router.get("/noblur", (req,res) => {
+	res.render("noblur", {
+		title: "Lost focus",
 	});
 });
 

@@ -1,35 +1,20 @@
-let socket = null; //monitor answers in real time
-
-function checkWindowSize()
-{
-	if (assessment.mode == "secure")
-	{
-		// NOTE: temporarily accept smartphone (security hole: pretend being a smartphone on desktop browser...)
-		if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry)/))
-			return true;
-		let test = () => {
-			return window.innerWidth < screen.width || window.innerHeight < screen.height;
-		};
-		const returnVal = test;
-		while (!test)
-			alert("Please enter fullscreen mode (F11)");
-		return returnVal;
-	}
-	return true;
-};
-
-function libsRefresh()
-{
-	$("#statements").find("code[class^=language-]").each( (i,elem) => {
-		Prism.highlightElement(elem);
-	});
-	MathJax.Hub.Queue(["Typeset",MathJax.Hub,"statements"]);
-};
-
 // TODO: if display == "all", les envois devraient être non définitifs (possibilité de corriger)
 // Et, blur sur une (sous-)question devrait envoyer la version courante de la sous-question
 
-let V = new Vue({
+let socket = null; //monitor answers in real time
+
+if (assessment.mode == "secure" && !checkWindowSize())
+	document.location.href= "/fullscreen";
+
+function checkWindowSize()
+{
+	// NOTE: temporarily accept smartphone (security hole: pretend being a smartphone on desktop browser...)
+	if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry)/))
+		return true;
+	return window.innerWidth == screen.width && window.innerHeight == screen.height;
+};
+
+new Vue({
 	el: "#assessment",
 	data: {
 		assessment: assessment,
@@ -51,28 +36,6 @@ let V = new Vue({
 					index: 0, //current question index in assessment.indices
 				};
 			},
-			mounted: function() {
-				if (assessment.mode != "secure")
-					return;
-				$("#warning").modal({
-					complete: () => {
-						this.stage = 2;
-						this.resumeAssessment();
-					},
-				});
-				window.addEventListener("blur", () => {
-					if (this.stage == 2)
-						this.showWarning();
-				}, false);
-				window.addEventListener("resize", e => {
-					if (this.stage == 2 && !checkWindowSize())
-						this.showWarning();
-				}, false);
-				//socket.on("disconnect", () => { }); //TODO: notify monitor (highlight red)
-			},
-			updated: function() {
-				libsRefresh();
-			},
 			// TODO: general render function for nested exercises
 			// TODO: with answer if stage==4 : class "wrong" if ticked AND stage==4 AND received answers
 			// class "right" if stage == 4 AND received answers (background-color: red / green)
@@ -87,7 +50,7 @@ let V = new Vue({
 							"div",
 							{
 								"class": {
-									"wording": true,
+									wording: true,
 								},
 								domProps: {
 									innerHTML: q.wording,
@@ -179,6 +142,11 @@ let V = new Vue({
 									"waves-light": true,
 									"btn": true,
 								},
+								style: {
+									"display": "block",
+									"margin-left": "auto",
+									"margin-right": "auto",
+								},
 								on: {
 									click: () => this.sendAnswer(assessment.indices[this.index]),
 								},
@@ -197,15 +165,35 @@ let V = new Vue({
 					questions
 				);
 			},
+			mounted: function() {
+				if (assessment.mode != "secure")
+					return;
+				window.addEventListener("keydown", e => {
+					// (Try to) Ignore F11 + F12 (avoid accidental window resize)
+					// NOTE: in Chromium at least, exiting fullscreen mode with F11 cannot be prevented.
+					// Workaround: disable key at higher level. Possible xbindkey config:
+					// "false"
+					//   m:0x10 + c:95
+					//   Mod2 + F11
+					if ([122,123].includes(e.keyCode))
+						e.preventDefault();
+				}, false);
+				window.addEventListener("blur", () => {
+					this.trySendCurrentAnswer();
+					document.location.href= "/noblur";
+				}, false);
+				window.addEventListener("resize", e => {
+					this.trySendCurrentAnswer();
+					document.location.href= "/fullscreen";
+				}, false);
+			},
 			methods: {
-				// HELPERS:
 				inputId: function(i,j) {
 					return "q" + i + "_" + "input" + j;
 				},
-				showWarning: function(action) {
-					this.sendAnswer(assessment.indices[this.index]);
-					this.stage = 32; //fictive stage to hide all elements
-					$("#warning").modal('open');
+				trySendCurrentAnswer: function() {
+					if (this.stage == 2)
+						this.sendAnswer(assessment.indices[this.index]);
 				},
 				// stage 2
 				sendAnswer: function(realIndex) {
@@ -238,41 +226,8 @@ let V = new Vue({
 						},
 					});
 				},
-				// stage 2 after blur or resize
-				resumeAssessment: function() {
-					checkWindowSize();
-				},
 			},
 		},
-	},
-	mounted: function() {
-		if (assessment.mode == "open")
-			return; //no security needed in open mode
-		window.addEventListener("keydown", e => {
-			// If F12 or ctrl+shift (ways to access devtools)
-			if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey))
-				e.preventDefault();
-		}, false);
-		// Devtools detect based on https://jsfiddle.net/ebhjxfwv/4/
-		let div = document.createElement('div');
-		let devtoolsLoop = setInterval(
-			() => {
-				if (assessment.mode != "open")
-				{
-					console.log(div);
-					console.clear();
-				}
-			},
-			1000
-		);
-		Object.defineProperty(div, "id", {
-			get: () => {
-				clearInterval(devtoolsLoop);
-				if (this.stage == 2)
-					this.endAssessment();
-				document.location.href = "/nodevtools";
-			}
-		});
 	},
 	computed: {
 		countdown: function() {
@@ -282,7 +237,6 @@ let V = new Vue({
 		},
 	},
 	methods: {
-		// HELPERS:
 		padWithZero: function(x) {
 			if (x < 10)
 				return "0" + x;
@@ -314,7 +268,6 @@ let V = new Vue({
 		},
 		// stage 1 --> 2 (get all questions, set password)
 		startAssessment: function() {
-			checkWindowSize();
 			let initializeStage2 = questions => {
 				$("#leftButton, #rightButton").hide();
 				if (assessment.time > 0)
@@ -331,10 +284,18 @@ let V = new Vue({
 					? _.range(assessment.questions.length)
 					: _.shuffle( _.range(assessment.questions.length) );
 				this.stage = 2;
-				Vue.nextTick( () => { libsRefresh(); });
+				Vue.nextTick( () => {
+					// Run Prism + MathJax on questions text
+					$("#statements").find("code[class^=language-]").each( (i,elem) => {
+						Prism.highlightElement(elem);
+					});
+					MathJax.Hub.Queue(["Typeset",MathJax.Hub,"statements"]);
+				});
 			};
 			if (assessment.mode == "open")
 				return initializeStage2();
+			// TODO: if existing password cookie: get stored answers (papers[number cookie]), inject (inputs), set index+indices
+			//       (instead of following ajax call)
 			$.ajax("/start/assessment", {
 				method: "GET",
 				data: {
@@ -348,11 +309,13 @@ let V = new Vue({
 					this.student.password = s.password;
 					// Got password: students answers locked to this page until potential teacher
 					// action (power failure, computer down, ...)
+					// TODO: set password cookie
 					// TODO: password also exchanged by sockets to check identity
 					//socket = io.connect("/" + assessment.name, {
 					//	query: "number=" + this.student.number + "&password=" + this.password
 					//});
 					//socket.on(message.allAnswers, this.setAnswers);
+					//socket.on("disconnect", () => { }); //TODO: notify monitor (highlight red), redirect
 					initializeStage2(s.questions);
 				},
 			});
@@ -369,40 +332,34 @@ let V = new Vue({
 					clearInterval(this);
 			}, 1000);
 		},
-		// stage 2 after disconnect (socket)
-		resumeAssessment: function() {
-			// UNIMPLEMENTED
-			// TODO: get stored answers (papers[number cookie]), inject (inputs), set index+indices
-		},
 		// stage 2 --> 3 (or 4)
-		// from a message by statements component
+		// from a message by statements component, or time over
 		endAssessment: function() {
-			// If time over or cheating: set endTime, destroy password
+			// Set endTime, destroy password
 			$("#leftButton, #rightButton").show();
-			//this.sendAnswer(...); //TODO: for each non-answered (and non-empty!) index (yet)
-			if (assessment.mode != "open")
+			if (assessment.mode == "open")
 			{
-				$.ajax("/end/assessment", {
-					method: "GET",
-					data: {
-						aid: assessment._id,
-						number: this.student.number,
-						password: this.student.password,
-					},
-					dataType: "json",
-					success: ret => {
-						if (!!ret.errmsg)
-							return alert(ret.errmsg);
-						assessment.conclusion = ret.conclusion;
-						this.stage = 3;
-						delete this.student["password"]; //unable to send new answers now
-						//socket.disconnect();
-						//socket = null;
-					},
-				});
-			}
-			else
 				this.stage = 4;
+				return;
+			}
+			$.ajax("/end/assessment", {
+				method: "GET",
+				data: {
+					aid: assessment._id,
+					number: this.student.number,
+					password: this.student.password,
+				},
+				dataType: "json",
+				success: ret => {
+					if (!!ret.errmsg)
+						return alert(ret.errmsg);
+					assessment.conclusion = ret.conclusion;
+					this.stage = 3;
+					delete this.student["password"]; //unable to send new answers now
+					//socket.disconnect();
+					//socket = null;
+				},
+			});
 		},
 		// stage 3 --> 4 (on socket message "feedback")
 		setAnswers: function(answers) {
