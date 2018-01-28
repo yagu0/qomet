@@ -13,15 +13,10 @@ block content
 	.container#assessment
 		.row
 			#warning.modal
-				.modal-content
-					p Your answer to the current question was sent to the server.
-					p To avoid future unpleasant surprises, please don't
-					ul
-						li resize the window, or
-						li lose window focus.
+				.modal-content {{ warnMsg }}
 				.modal-footer
 					.center-align
-						a.modal-action.modal-close.waves-effect.waves-light.btn-flat(href="#!") Got it!
+						a.modal-action.modal-close.waves-effect.waves-light.btn-flat(href="#!") Ok
 		.row
 			.col.s12.m10.offset-m1.l8.offset-l2.xl6.offset-xl3
 				h4= assessment.name
@@ -52,7 +47,7 @@ block content
 						.card
 							.timer.center(v-if="stage==2") {{ countdown }}
 					.card
-						statements(:assessment="assessment" :student="student" :stage="stage" :inputs="inputs" @gameover="endAssessment")
+						statements(:assessment="assessment" :student="student" :stage="stage" :inputs="inputs" @gameover="endAssessment" @warning="warning")
 				#stage3(v-show="stage==3")
 					.card
 						.finish Exam completed &#9786; ...don't close the window!

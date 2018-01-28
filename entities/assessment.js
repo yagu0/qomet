@@ -106,6 +106,25 @@ const AssessmentEntity =
 		);
 	},
 
+	getPaperByNumber: function(aid, number, callback)
+	{
+		db.assessments.findOne(
+			{
+				_id: aid,
+				"papers.number": number,
+			},
+			(err,a) => {
+				if (!!err || !a)
+					return callback(err,a);
+				for (let p of a.papers)
+				{
+					if (p.number == number)
+						return callback(null,p); //reached for sure
+				}
+			}
+		);
+	},
+
 	startSession: function(aid, number, password, callback)
 	{
 		// TODO: security, do not re-do tasks if already done
@@ -120,6 +139,31 @@ const AssessmentEntity =
 				// then build JSON tree for easier access / correct
 			}}},
 			callback
+		);
+	},
+
+
+	hasInput: function(aid, number, password, idx, cb)
+	{
+		db.assessments.findOne(
+			{
+				_id: aid,
+				"papers.number": number,
+				"papers.password": password,
+			},
+			(err,a) => {
+				if (!!err || !a)
+					return cb(err,a);
+				for (let p of a.papers)
+				{
+					for (let i of p.inputs)
+					{
+						if (i.index == idx)
+							return cb(null,true);
+					}
+				}
+				cb(null,false);
+			}
 		);
 	},
 

@@ -57,15 +57,48 @@ const AssessmentModel =
 	},
 
 	// Set password in responses collection
-	startSession: function(aid, number, cb)
+	startSession: function(aid, number, password, cb)
 	{
-		const password = TokenGen.generate(12); //arbitrary number, 12 seems enough...
-		AssessmentEntity.getQuestions(aid, (err,questions) => {
-			AssessmentEntity.startSession(aid, number, password, (err2,ret) => {
-				cb(err, {
-					questions: questions,
-					password: password,
+		AssessmentEntity.getPaperByNumber(aid, number, (err,paper) => {
+			if (!!err)
+				return cb(err,null);
+			if (!!paper)
+			{
+				if (!password)
+					return cb({errmsg:"Missing password"});
+				if (paper.password != password)
+					return cb({errmsg:"Wrong password"});
+			}
+			AssessmentEntity.getQuestions(aid, (err,questions) => {
+				if (!!err)
+					return cb(err,null);
+				if (!!paper)
+					return cb(null,{paper:paper,questions:questions});
+				AssessmentEntity.startSession(aid, number, password, (err2,ret) => {
+					const pwd = TokenGen.generate(12); //arbitrary number, 12 seems enough...
+					cb(err2, {
+						questions: questions,
+						password: pwd,
+					});
 				});
+			});
+		});
+	},
+
+	newAnswer: function(aid, number, password, input, cb)
+	{
+		console.log(JSON.stringify(input));
+		// Check that student hasn't already answered
+		AssessmentEntity.hasInput(aid, number, password, input.index, (err,ret) => {
+			if (!!err)
+				return cb(err,null);
+			if (!!ret)
+				return cb({errmsg:"Question already answered"},null);
+			AssessmentEntity.setInput(aid, number, password, input, (err2,ret2) => {
+				console.log(JSON.stringify(ret2));
+				if (!!err2 || !ret2)
+					return cb(err2,ret2);
+				return cb(null,ret2);
 			});
 		});
 	},

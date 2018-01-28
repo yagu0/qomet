@@ -11,7 +11,8 @@ function checkWindowSize()
 	// NOTE: temporarily accept smartphone (security hole: pretend being a smartphone on desktop browser...)
 	if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry)/))
 		return true;
-	return window.innerWidth == screen.width && window.innerHeight == screen.height;
+	// 3 is arbitrary, but a small tolerance is required (e.g. in Firefox)
+	return window.innerWidth >= screen.width-3 && window.innerHeight >= screen.height-3;
 };
 
 new Vue({
@@ -27,15 +28,11 @@ new Vue({
 		//       4: show answers
 		stage: assessment.mode != "open" ? 0 : 1,
 		remainingTime: 0, //global, in seconds
+		warnMsg: "",
 	},
 	components: {
 		"statements": {
 			props: ['assessment','inputs','student','stage'],
-			data: function() {
-				return {
-					index: 0, //current question index in assessment.indices
-				};
-			},
 			// TODO: general render function for nested exercises
 			// TODO: with answer if stage==4 : class "wrong" if ticked AND stage==4 AND received answers
 			// class "right" if stage == 4 AND received answers (background-color: red / green)
@@ -43,7 +40,7 @@ new Vue({
 			// Full questions tree is rendered, but some parts hidden depending on display settings
 			render(h) {
 				let self = this;
-				let questions = assessment.questions.map( (q,i) => {
+				let questions = (assessment.questions || [ ]).map( (q,i) => {
 					let questionContent = [ ];
 					questionContent.push(
 						h(
@@ -69,7 +66,7 @@ new Vue({
 								"input",
 								{
 									domProps: {
-										checked: this.inputs[i][idx],
+										checked: this.inputs.length > 0 && this.inputs[i][idx],
 									},
 									attrs: {
 										id: this.inputId(i,idx),
@@ -124,7 +121,7 @@ new Vue({
 						{
 							"class": {
 								"question": true,
-								"hide": this.stage == 2 && assessment.display == 'one' && assessment.indices[this.index] != i,
+								"hide": this.stage == 2 && assessment.display == 'one' && assessment.indices[assessment.index] != i,
 							},
 						},
 						questionContent
@@ -132,7 +129,6 @@ new Vue({
 				});
 				if (this.stage == 2)
 				{
-					// TODO: one button per question
 					questions.unshift(
 						h(
 							"button",
@@ -148,7 +144,7 @@ new Vue({
 									"margin-right": "auto",
 								},
 								on: {
-									click: () => this.sendAnswer(assessment.indices[this.index]),
+									click: () => this.sendAnswer(assessment.indices[assessment.index]),
 								},
 							},
 							"Send"
@@ -193,14 +189,16 @@ new Vue({
 				},
 				trySendCurrentAnswer: function() {
 					if (this.stage == 2)
-						this.sendAnswer(assessment.indices[this.index]);
+						this.sendAnswer(assessment.indices[assessment.index]);
 				},
 				// stage 2
 				sendAnswer: function(realIndex) {
-					if (this.index == assessment.questions.length - 1)
+					console.log(realIndex);
+					if (assessment.index == assessment.questions.length - 1)
 						this.$emit("gameover");
 					else
-						this.index++;
+						assessment.index++;
+					this.$forceUpdate(); //TODO: shouldn't be required
 					if (assessment.mode == "open")
 						return; //only local
 					let answerData = {
@@ -221,7 +219,7 @@ new Vue({
 						dataType: "json",
 						success: ret => {
 							if (!!ret.errmsg)
-								return alert(ret.errmsg);
+								return this.$emit("warning", ret.errmsg);
 							//socket.emit(message.newAnswer, answer);
 						},
 					});
@@ -236,7 +234,15 @@ new Vue({
 			return this.padWithZero(minutes) + ":" + this.padWithZero(seconds);
 		},
 	},
+	mounted: function() {
+		$(".modal").modal();
+	},
 	methods: {
+		// In case of AJAX errors
+		warning: function(message) {
+			this.warnMsg = message;
+			$("#warning").modal("open");
+		},
 		padWithZero: function(x) {
 			if (x < 10)
 				return "0" + x;
@@ -253,7 +259,7 @@ new Vue({
 				dataType: "json",
 				success: s => {
 					if (!!s.errmsg)
-						return alert(s.errmsg);
+						return this.warning(s.errmsg);
 					this.stage = 1;
 					this.student = s.student;
 					Vue.nextTick( () => { Materialize.updateTextFields(); });
@@ -268,11 +274,11 @@ new Vue({
 		},
 		// stage 1 --> 2 (get all questions, set password)
 		startAssessment: function() {
-			let initializeStage2 = questions => {
+			let initializeStage2 = (questions,paper) => {
 				$("#leftButton, #rightButton").hide();
 				if (assessment.time > 0)
 				{
-					this.remainingTime = assessment.time * 60;
+					this.remainingTime = assessment.time * 60 - (!!paper ? paper.startTime/1000 : 0);
 					this.runTimer();
 				}
 				// Initialize structured answer(s) based on questions type and nesting (TODO: more general)
@@ -280,9 +286,20 @@ new Vue({
 					assessment.questions = questions;
 				for (let q of assessment.questions)
 					this.inputs.push( _(q.options.length).times( _.constant(false) ) );
-				assessment.indices = assessment.fixed
-					? _.range(assessment.questions.length)
-					: _.shuffle( _.range(assessment.questions.length) );
+				if (!paper)
+				{
+					assessment.indices = assessment.fixed
+						? _.range(assessment.questions.length)
+						: _.shuffle( _.range(assessment.questions.length) );
+				}
+				else
+				{
+					// Resuming
+					let indices = paper.inputs.map( input => { return input.index; });
+					let remainingIndices = _.difference(_.range(assessment.questions.length), indices);
+					assessment.indices = indices.concat( _.shuffle(remainingIndices) );
+				}
+				assessment.index = !!paper ? paper.inputs.length : 0;
 				this.stage = 2;
 				Vue.nextTick( () => {
 					// Run Prism + MathJax on questions text
@@ -294,8 +311,6 @@ new Vue({
 			};
 			if (assessment.mode == "open")
 				return initializeStage2();
-			// TODO: if existing password cookie: get stored answers (papers[number cookie]), inject (inputs), set index+indices
-			//       (instead of following ajax call)
 			$.ajax("/start/assessment", {
 				method: "GET",
 				data: {
@@ -305,18 +320,26 @@ new Vue({
 				dataType: "json",
 				success: s => {
 					if (!!s.errmsg)
-						return alert(s.errmsg);
-					this.student.password = s.password;
-					// Got password: students answers locked to this page until potential teacher
-					// action (power failure, computer down, ...)
-					// TODO: set password cookie
+						return this.warning(s.errmsg);
+					if (!!s.paper)
+					{
+						// Resuming: receive stored answers + startTime
+						this.student.password = s.paper.password;
+						this.inputs = s.paper.inputs.map( inp => { return inp.input; });
+					}
+					else
+					{
+						this.student.password = s.password;
+						// Got password: students answers locked to this page until potential teacher
+						// action (power failure, computer down, ...)
+					}
 					// TODO: password also exchanged by sockets to check identity
 					//socket = io.connect("/" + assessment.name, {
 					//	query: "number=" + this.student.number + "&password=" + this.password
 					//});
 					//socket.on(message.allAnswers, this.setAnswers);
 					//socket.on("disconnect", () => { }); //TODO: notify monitor (highlight red), redirect
-					initializeStage2(s.questions);
+					initializeStage2(s.questions, s.paper);
 				},
 			});
 		},
@@ -352,7 +375,7 @@ new Vue({
 				dataType: "json",
 				success: ret => {
 					if (!!ret.errmsg)
-						return alert(ret.errmsg);
+						return this.warning(ret.errmsg);
 					assessment.conclusion = ret.conclusion;
 					this.stage = 3;
 					delete this.student["password"]; //unable to send new answers now

@@ -47,17 +47,21 @@ router.post("/update/assessment", access.ajax, access.logged, (req,res) => {
 router.get("/start/assessment", access.ajax, (req,res) => {
 	let number = req.query["number"];
 	let aid = req.query["aid"];
-	let error = validator({ _id:aid, papers:[{number:number}] }, "Assessment");
+	let password = req.cookies["password"]; //potentially from cookies, resuming
+	let error = validator({ _id:aid, papers:[{number:number,password:password || "samplePwd"}] }, "Assessment");
 	if (error.length > 0)
 		return res.json({errmsg:error});
-	AssessmentModel.startSession(ObjectId(aid), number, (err,ret) => {
+	AssessmentModel.startSession(ObjectId(aid), number, password, (err,ret) => {
 		access.checkRequest(res,err,ret,"Failed session initialization", () => {
-			// Set password
-			res.cookie("password", ret.password, {
-				httpOnly: true,
-				maxAge: params.cookieExpire,
-			});
-			res.json(ret); //contains questions+password
+			if (!password)
+			{
+				// Set password
+				res.cookie("password", ret.password, {
+					httpOnly: true,
+					maxAge: params.cookieExpire,
+				});
+			}
+			res.json(ret); //contains questions+password(or paper if resuming)
 		});
 	});
 });
@@ -70,7 +74,7 @@ router.get("/send/answer", access.ajax, (req,res) => {
 	let error = validator({ _id:aid, papers:[{number:number,password:password,inputs:[input]}] }, "Assessment");
 	if (error.length > 0)
 		return res.json({errmsg:error});
-	AssessmentEntity.setInput(ObjectId(aid), number, password, input, (err,ret) => {
+	AssessmentModel.newAnswer(ObjectId(aid), number, password, input, (err,ret) => {
 		access.checkRequest(res,err,ret,"Cannot send answer", () => {
 			res.json({});
 		});
