@@ -74,8 +74,8 @@ const AssessmentModel =
 					return cb(err,null);
 				if (!!paper)
 					return cb(null,{paper:paper,questions:questions});
-				AssessmentEntity.startSession(aid, number, password, (err2,ret) => {
-					const pwd = TokenGen.generate(12); //arbitrary number, 12 seems enough...
+				const pwd = TokenGen.generate(12); //arbitrary number, 12 seems enough...
+				AssessmentEntity.startSession(aid, number, pwd, (err2,ret) => {
 					cb(err2, {
 						questions: questions,
 						password: pwd,
@@ -87,7 +87,6 @@ const AssessmentModel =
 
 	newAnswer: function(aid, number, password, input, cb)
 	{
-		console.log(JSON.stringify(input));
 		// Check that student hasn't already answered
 		AssessmentEntity.hasInput(aid, number, password, input.index, (err,ret) => {
 			if (!!err)
@@ -95,7 +94,6 @@ const AssessmentModel =
 			if (!!ret)
 				return cb({errmsg:"Question already answered"},null);
 			AssessmentEntity.setInput(aid, number, password, input, (err2,ret2) => {
-				console.log(JSON.stringify(ret2));
 				if (!!err2 || !ret2)
 					return cb(err2,ret2);
 				return cb(null,ret2);

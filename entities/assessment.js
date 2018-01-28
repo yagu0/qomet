@@ -127,7 +127,6 @@ const AssessmentEntity =
 
 	startSession: function(aid, number, password, callback)
 	{
-		// TODO: security, do not re-do tasks if already done
 		db.assessments.update(
 			{ _id: aid },
 			{ $push: { papers: {
@@ -154,13 +153,11 @@ const AssessmentEntity =
 			(err,a) => {
 				if (!!err || !a)
 					return cb(err,a);
-				for (let p of a.papers)
+				let papIdx = a.papers.findIndex( item => { return item.number == number; });
+				for (let i of a.papers[papIdx].inputs)
 				{
-					for (let i of p.inputs)
-					{
-						if (i.index == idx)
-							return cb(null,true);
-					}
+					if (i.index == idx)
+						return cb(null,true);
 				}
 				cb(null,false);
 			}

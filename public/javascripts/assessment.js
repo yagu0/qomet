@@ -193,14 +193,15 @@ new Vue({
 				},
 				// stage 2
 				sendAnswer: function(realIndex) {
-					console.log(realIndex);
-					if (assessment.index == assessment.questions.length - 1)
-						this.$emit("gameover");
-					else
-						assessment.index++;
-					this.$forceUpdate(); //TODO: shouldn't be required
+					let gotoNext = () => {
+						if (assessment.index == assessment.questions.length - 1)
+							this.$emit("gameover");
+						else
+							assessment.index++;
+						this.$forceUpdate(); //TODO: shouldn't be required
+					};
 					if (assessment.mode == "open")
-						return; //only local
+						return gotoNext(); //only local
 					let answerData = {
 						aid: assessment._id,
 						answer: JSON.stringify({
@@ -220,6 +221,8 @@ new Vue({
 						success: ret => {
 							if (!!ret.errmsg)
 								return this.$emit("warning", ret.errmsg);
+							else
+								gotoNext();
 							//socket.emit(message.newAnswer, answer);
 						},
 					});
