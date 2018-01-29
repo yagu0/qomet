@@ -8,6 +8,10 @@ const params = require("../config/parameters");
 const validator = require("../public/javascripts/utils/validation");
 const ObjectId = require("bson-objectid");
 const sanitizeHtml = require('sanitize-html');
+const sanitizeOpts = {
+	allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img' ]),
+	allowedAttributes: { code: [ 'class' ] },
+};
 
 router.get("/add/assessment", access.ajax, access.logged, (req,res) => {
 	const name = req.query["name"];
@@ -27,7 +31,6 @@ router.post("/update/assessment", access.ajax, access.logged, (req,res) => {
 	let error = validator(assessment, "Assessment");
 	if (error.length > 0)
 		return res.json({errmsg:error});
-	const sanitizeOpts = {allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img' ]) };
 	assessment.introduction = sanitizeHtml(assessment.introduction, sanitizeOpts);
 	assessment.conclusion = sanitizeHtml(assessment.conclusion, sanitizeOpts);
 	assessment.questions.forEach( q => {

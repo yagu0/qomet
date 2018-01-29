@@ -15,6 +15,15 @@ function checkWindowSize()
 	return window.innerWidth >= screen.width-3 && window.innerHeight >= screen.height-3;
 };
 
+function libsRefresh()
+{
+	// Run Prism + MathJax on questions text
+	$("#statements").find("code[class^=language-]").each( (i,elem) => {
+		Prism.highlightElement(elem);
+	});
+	MathJax.Hub.Queue(["Typeset",MathJax.Hub,"statements"]);
+}
+
 new Vue({
 	el: "#assessment",
 	data: {
@@ -183,6 +192,9 @@ new Vue({
 					document.location.href= "/fullscreen";
 				}, false);
 			},
+			updated: function() {
+				libsRefresh(); //TODO: shouldn't be required: "MathJax" strings on start and assign them to assessment.questions. ...
+			},
 			methods: {
 				inputId: function(i,j) {
 					return "q" + i + "_" + "input" + j;
@@ -300,18 +312,12 @@ new Vue({
 				{
 					// Resuming
 					let indices = paper.inputs.map( input => { return input.index; });
-					let remainingIndices = _.difference(_.range(assessment.questions.length), indices);
+					let remainingIndices = _.difference( _.range(assessment.questions.length).map(String), indices );
 					assessment.indices = indices.concat( _.shuffle(remainingIndices) );
 				}
 				assessment.index = !!paper ? paper.inputs.length : 0;
+				Vue.nextTick(libsRefresh);
 				this.stage = 2;
-				Vue.nextTick( () => {
-					// Run Prism + MathJax on questions text
-					$("#statements").find("code[class^=language-]").each( (i,elem) => {
-						Prism.highlightElement(elem);
-					});
-					MathJax.Hub.Queue(["Typeset",MathJax.Hub,"statements"]);
-				});
 			};
 			if (assessment.mode == "open")
 				return initializeStage2();
