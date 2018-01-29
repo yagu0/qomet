@@ -281,7 +281,8 @@ new Vue({
 				$("#leftButton, #rightButton").hide();
 				if (assessment.time > 0)
 				{
-					this.remainingTime = assessment.time * 60 - (!!paper ? paper.startTime/1000 : 0);
+					const deltaTime = !!paper ? Date.now() - paper.startTime : 0;
+					this.remainingTime = assessment.time * 60 - Math.round(deltaTime / 1000);
 					this.runTimer();
 				}
 				// Initialize structured answer(s) based on questions type and nesting (TODO: more general)
