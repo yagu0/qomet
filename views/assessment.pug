@@ -47,7 +47,8 @@ block content
 						.card
 							.timer.center(v-if="stage==2") {{ countdown }}
 					.card
-						statements(:assessment="assessment" :student="student" :stage="stage" :inputs="inputs" @gameover="endAssessment" @warning="warning")
+						button.waves-effect.waves-light.btn(style="display:block;margin:0 auto" @click="sendAnswer") Send
+						statements(:questions="assessment.questions" :showAnswers="showAnswers" :index="index" :inputs="inputs" @gameover="endAssessment")
 				#stage3(v-show="stage==3")
 					.card
 						.finish Exam completed &#9786; ...don't close the window!
@@ -58,4 +59,6 @@ block content
 block append javascripts
 	script.
 		let assessment = !{JSON.stringify(assessment)};
+		const monitoring = false;
+	script(src="/javascripts/components/statements.js")
 	script(src="/javascripts/assessment.js")

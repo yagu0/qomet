@@ -1,6 +1,3 @@
-// TODO: if display == "all", les envois devraient être non définitifs (possibilité de corriger)
-// Et, blur sur une (sous-)question devrait envoyer la version courante de la sous-question
-
 let socket = null; //monitor answers in real time
 
 if (assessment.mode == "secure" && !checkWindowSize())
@@ -14,15 +11,6 @@ function checkWindowSize()
 	// 3 is arbitrary, but a small tolerance is required (e.g. in Firefox)
 	return window.innerWidth >= screen.width-3 && window.innerHeight >= screen.height-3;
 };
-
-function libsRefresh()
-{
-	// Run Prism + MathJax on questions text
-	$("#statements").find("code[class^=language-]").each( (i,elem) => {
-		Prism.highlightElement(elem);
-	});
-	MathJax.Hub.Queue(["Typeset",MathJax.Hub,"statements"]);
-}
 
 new Vue({
 	el: "#assessment",
@@ -39,207 +27,6 @@ new Vue({
 		remainingTime: 0, //global, in seconds
 		warnMsg: "",
 	},
-	components: {
-		"statements": {
-			props: ['assessment','inputs','student','stage'],
-			// TODO: general render function for nested exercises
-			// There should be a questions navigator below, or next (visible if display=='all')
-			// Full questions tree is rendered, but some parts hidden depending on display settings
-			render(h) {
-				let self = this;
-				let questions = (assessment.questions || [ ]).map( (q,i) => {
-					let questionContent = [ ];
-					questionContent.push(
-						h(
-							"div",
-							{
-								"class": {
-									wording: true,
-								},
-								domProps: {
-									innerHTML: q.wording,
-								},
-							}
-						)
-					);
-					let optionsOrder = _.range(q.options.length);
-					if (!q.fixed)
-						optionsOrder = _.shuffle(optionsOrder);
-					let optionList = [ ];
-					optionsOrder.forEach( idx => {
-						let option = [ ];
-						option.push(
-							h(
-								"input",
-								{
-									domProps: {
-										checked: this.inputs.length > 0 && this.inputs[i][idx],
-									},
-									attrs: {
-										id: this.inputId(i,idx),
-										type: "checkbox",
-									},
-									on: {
-										change: e => { this.inputs[i][idx] = e.target.checked; },
-									},
-								},
-							)
-						);
-						option.push(
-							h(
-								"label",
-								{
-									domProps: {
-										innerHTML: q.options[idx],
-									},
-									attrs: {
-										"for": this.inputId(i,idx),
-									},
-								}
-							)
-						);
-						optionList.push(
-							h(
-								"div",
-								{
-									"class": {
-										option: true,
-										choiceCorrect: this.stage == 4 && assessment.questions[i].answer.includes(idx),
-										choiceWrong: this.stage == 4 && this.inputs[i][idx] && !assessment.questions[i].answer.includes(idx),
-									},
-								},
-								option
-							)
-						);
-					});
-					questionContent.push(
-						h(
-							"div",
-							{
-								"class": {
-									optionList: true,
-								},
-							},
-							optionList
-						)
-					);
-					return h(
-						"div",
-						{
-							"class": {
-								"question": true,
-								"hide": this.stage == 2 && assessment.display == 'one' && assessment.indices[assessment.index] != i,
-							},
-						},
-						questionContent
-					);
-				});
-				if (this.stage == 2)
-				{
-					questions.unshift(
-						h(
-							"button",
-							{
-								"class": {
-									"waves-effect": true,
-									"waves-light": true,
-									"btn": true,
-								},
-								style: {
-									"display": "block",
-									"margin-left": "auto",
-									"margin-right": "auto",
-								},
-								on: {
-									click: () => this.sendAnswer(assessment.indices[assessment.index]),
-								},
-							},
-							"Send"
-						)
-					);
-				}
-				return h(
-					"div",
-					{
-						attrs: {
-							id: "statements",
-						},
-					},
-					questions
-				);
-			},
-			mounted: function() {
-				if (assessment.mode != "secure")
-					return;
-				window.addEventListener("keydown", e => {
-					// Ignore F12 (avoid accidental window resize due to devtools)
-					// NOTE: in Chromium at least, fullscreen mode exit with F11 cannot be prevented.
-					// Workaround: disable key at higher level. Possible xbindkey config:
-					// "false"
-					//   m:0x10 + c:95
-					//   Mod2 + F11
-					if (e.keyCode == 123)
-						e.preventDefault();
-				}, false);
-				window.addEventListener("blur", () => {
-					this.trySendCurrentAnswer();
-					document.location.href= "/noblur";
-				}, false);
-				window.addEventListener("resize", e => {
-					this.trySendCurrentAnswer();
-					document.location.href= "/fullscreen";
-				}, false);
-			},
-			updated: function() {
-				libsRefresh(); //TODO: shouldn't be required: "MathJax" strings on start and assign them to assessment.questions. ...
-			},
-			methods: {
-				inputId: function(i,j) {
-					return "q" + i + "_" + "input" + j;
-				},
-				trySendCurrentAnswer: function() {
-					if (this.stage == 2)
-						this.sendAnswer(assessment.indices[assessment.index]);
-				},
-				// stage 2
-				sendAnswer: function(realIndex) {
-					let gotoNext = () => {
-						if (assessment.index == assessment.questions.length - 1)
-							this.$emit("gameover");
-						else
-							assessment.index++;
-						this.$forceUpdate(); //TODO: shouldn't be required
-					};
-					if (assessment.mode == "open")
-						return gotoNext(); //only local
-					let answerData = {
-						aid: assessment._id,
-						answer: JSON.stringify({
-							index:realIndex.toString(),
-							input:this.inputs[realIndex]
-								.map( (tf,i) => { return {val:tf,idx:i}; } )
-								.filter( item => { return item.val; })
-								.map( item => { return item.idx; })
-						}),
-						number: this.student.number,
-						password: this.student.password,
-					};
-					$.ajax("/send/answer", {
-						method: "GET",
-						data: answerData,
-						dataType: "json",
-						success: ret => {
-							if (!!ret.errmsg)
-								return this.$emit("warning", ret.errmsg);
-							else
-								gotoNext();
-							socket.emit(message.newAnswer, answerData);
-						},
-					});
-				},
-			},
-		},
-	},
 	computed: {
 		countdown: function() {
 			let seconds = this.remainingTime % 60;
@@ -249,6 +36,31 @@ new Vue({
 	},
 	mounted: function() {
 		$(".modal").modal();
+		if (assessment.mode != "secure")
+			return;
+		window.addEventListener("keydown", e => {
+			// Ignore F12 (avoid accidental window resize due to devtools)
+			// NOTE: in Chromium at least, fullscreen mode exit with F11 cannot be prevented.
+			// Workaround: disable key at higher level. Possible xbindkey config:
+			// "false"
+			//   m:0x10 + c:95
+			//   Mod2 + F11
+			if (e.keyCode == 123)
+				e.preventDefault();
+		}, false);
+		window.addEventListener("blur", () => {
+			this.trySendCurrentAnswer();
+			document.location.href= "/noblur";
+		}, false);
+		window.addEventListener("resize", e => {
+			this.trySendCurrentAnswer();
+			document.location.href= "/fullscreen";
+		}, false);
+	},
+		trySendCurrentAnswer: function() {
+			if (this.stage == 2)
+				this.sendAnswer(assessment.indices[assessment.index]);
+		},
 	},
 	methods: {
 		// In case of AJAX errors
@@ -360,6 +172,45 @@ new Vue({
 					self.endAssessment();
 					clearInterval(this);
 			}, 1000);
+		},
+		// stage 2
+		// TODO: currentIndex ? click: () => this.sendAnswer(assessment.indices[assessment.index]),
+		// De même, cette condition sur le display d'une question doit remonter (résumée dans 'index' property) :
+		// à faire par ici : "hide": this.stage == 2 && assessment.display == 'one' && assessment.indices[assessment.index] != i,
+		sendAnswer: function(realIndex) {
+			let gotoNext = () => {
+				if (assessment.index == assessment.questions.length - 1)
+					this.$emit("gameover");
+				else
+					assessment.index++;
+				this.$forceUpdate(); //TODO: shouldn't be required
+			};
+			if (assessment.mode == "open")
+				return gotoNext(); //only local
+			let answerData = {
+				aid: assessment._id,
+				answer: JSON.stringify({
+					index:realIndex.toString(),
+					input:this.inputs[realIndex]
+						.map( (tf,i) => { return {val:tf,idx:i}; } )
+						.filter( item => { return item.val; })
+						.map( item => { return item.idx; })
+				}),
+				number: this.student.number,
+				password: this.student.password,
+			};
+			$.ajax("/send/answer", {
+				method: "GET",
+				data: answerData,
+				dataType: "json",
+				success: ret => {
+					if (!!ret.errmsg)
+						return this.$emit("warning", ret.errmsg);
+					else
+						gotoNext();
+					socket.emit(message.newAnswer, answerData);
+				},
+			});
 		},
 		// stage 2 --> 3 (or 4)
 		// from a message by statements component, or time over

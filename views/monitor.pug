@@ -28,4 +28,7 @@ block content
 						.conclusion(v-html="assessment.conclusion")
 
 block append javascripts
+	script.
+		const monitoring = true;
+	script(src="/javascripts/components/statements.js")
 	script(src="/javascripts/monitor.js")
