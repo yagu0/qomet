@@ -1,25 +1,27 @@
-var message = require("./public/javascripts/utils/socketMessages.js");
+const message = require("./public/javascripts/utils/socketMessages");
 const params = require("./config/parameters");
+const AssessmentEntity = require("./entities/assessment");
+const ObjectId = require("bson-objectid");
 
 // TODO: when teacher connect on monitor, io.of("appropriate namespace").on(connect student) { ... }
 // --> 2 sockets on monitoring page: one with ns "/" et one dedicated to the exam, triggered after the first
 // --> The monitoring page should not be closed during exam (otherwise monitors won't receive any more data)
 
-function quizzRoom(socket) {
+function examRoom(socket) {
 	let students = { };
+	const aid = ObjectId(socket.handshake.query.aid);
 
 	// Student or monitor stuff
 	const isTeacher = !!socket.handshake.query.secret && socket.handshake.query.secret == params.secret;
 
 	if (isTeacher)
 	{
-		// TODO: on student disconnect, too
 		socket.on(message.newAnswer, m => { //got answer from student
 			socket.emit(message.newAnswer, m);
 		});
-		socket.on(message.socketFeedback, m => { //send feedback to student (answers)
-			if (!!students[m.number])
-				socket.broadcast.to(students[m.number]).emit(message.newFeedback, { feedback:m.feedback });
+		socket.on(message.allAnswers, m => { //send feedback to student (answers)
+			if (!!students[m.number]) //TODO: namespace here... room quiz
+				socket.broadcast.to(students[m.number]).emit(message.allAnswers, m);
 		});
 		socket.on("disconnect", m => {
 			// Reset student array if no more active teacher connections (TODO: condition)
@@ -31,17 +33,25 @@ function quizzRoom(socket) {
 	{
 		const number = socket.handshake.query.number;
 		const password = socket.handshake.query.password;
-		// Prevent socket connection (just ignore) if student already connected
-		if (!!students[number] && students[number].password != password)
-			return;
-		students[number] = {
-			sid: socket.id,
-			password: password,
-		};
-		socket.on(message.newFeedback, () => { //got feedback from teacher
-			socket.emit(message.newFeedback, m);
+		AssessmentEntity.checkPassword(aid, number, password, (err,ret) => {
+			if (!!err || !ret)
+				return; //wrong password, or some unexpected error...
+			// Prevent socket connection (just ignore) if student already connected
+			if (!!students[number])
+				return;
+			students[number] = {
+				sid: socket.id,
+				password: password,
+			};
+			socket.on(message.allAnswers, () => { //got all answers from teacher
+				socket.emit(message.allAnswers, m);
+			});
+			socket.on("disconnect", () => {
+				// ..
+				//TODO: notify monitor (highlight red), redirect
+			});
+			// NOTE: nothing on disconnect --> teacher disconnect trigger students cleaning
 		});
-		// NOTE: nothing on disconnect --> teacher disconnect trigger students cleaning
 	}
 }
 

@@ -43,8 +43,6 @@ new Vue({
 		"statements": {
 			props: ['assessment','inputs','student','stage'],
 			// TODO: general render function for nested exercises
-			// TODO: with answer if stage==4 : class "wrong" if ticked AND stage==4 AND received answers
-			// class "right" if stage == 4 AND received answers (background-color: red / green)
 			// There should be a questions navigator below, or next (visible if display=='all')
 			// Full questions tree is rendered, but some parts hidden depending on display settings
 			render(h) {
@@ -174,13 +172,13 @@ new Vue({
 				if (assessment.mode != "secure")
 					return;
 				window.addEventListener("keydown", e => {
-					// (Try to) Ignore F11 + F12 (avoid accidental window resize)
-					// NOTE: in Chromium at least, exiting fullscreen mode with F11 cannot be prevented.
+					// Ignore F12 (avoid accidental window resize due to devtools)
+					// NOTE: in Chromium at least, fullscreen mode exit with F11 cannot be prevented.
 					// Workaround: disable key at higher level. Possible xbindkey config:
 					// "false"
 					//   m:0x10 + c:95
 					//   Mod2 + F11
-					if ([122,123].includes(e.keyCode))
+					if (e.keyCode == 123)
 						e.preventDefault();
 				}, false);
 				window.addEventListener("blur", () => {
@@ -235,7 +233,7 @@ new Vue({
 								return this.$emit("warning", ret.errmsg);
 							else
 								gotoNext();
-							//socket.emit(message.newAnswer, answer);
+							socket.emit(message.newAnswer, answerData);
 						},
 					});
 				},
@@ -343,12 +341,10 @@ new Vue({
 						// Got password: students answers locked to this page until potential teacher
 						// action (power failure, computer down, ...)
 					}
-					// TODO: password also exchanged by sockets to check identity
-					//socket = io.connect("/" + assessment.name, {
-					//	query: "number=" + this.student.number + "&password=" + this.password
-					//});
-					//socket.on(message.allAnswers, this.setAnswers);
-					//socket.on("disconnect", () => { }); //TODO: notify monitor (highlight red), redirect
+					socket = io.connect("/" + assessment.name, {
+						query: "number=" + this.student.number + "&password=" + this.password
+					});
+					socket.on(message.allAnswers, this.setAnswers);
 					initializeStage2(s.questions, s.paper);
 				},
 			});
@@ -389,8 +385,8 @@ new Vue({
 					assessment.conclusion = ret.conclusion;
 					this.stage = 3;
 					delete this.student["password"]; //unable to send new answers now
-					//socket.disconnect();
-					//socket = null;
+					socket.disconnect();
+					socket = null;
 				},
 			});
 		},
