@@ -7,6 +7,8 @@ const ObjectId = require("bson-objectid");
 // --> 2 sockets on monitoring page: one with ns "/" et one dedicated to the exam, triggered after the first
 // --> The monitoring page should not be closed during exam (otherwise monitors won't receive any more data)
 
+// TOOD need to re-introduce disconnections count + time (showed in monitoring and stored
+
 function examRoom(socket) {
 	let students = { };
 	const aid = ObjectId(socket.handshake.query.aid);
