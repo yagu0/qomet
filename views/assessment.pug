@@ -47,8 +47,8 @@ block content
 						.card
 							.timer.center(v-if="stage==2") {{ countdown }}
 					.card
-						button.waves-effect.waves-light.btn(style="display:block;margin:0 auto" @click="sendAnswer") Send
-						statements(:questions="assessment.questions" :showAnswers="showAnswers" :index="index" :inputs="inputs" @gameover="endAssessment")
+						button#sendAsnwer.waves-effect.waves-light.btn(@click="sendAnswer") Send
+						statements(:questions="assessment.questions" :answers="answers")
 				#stage3(v-show="stage==3")
 					.card
 						.finish Exam completed &#9786; ...don't close the window!

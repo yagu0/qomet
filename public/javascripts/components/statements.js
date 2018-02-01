@@ -1,9 +1,16 @@
 Vue.component("statements", {
-	props: ['questions','inputs','showAnswers','index'], // index=-1 : show all, otherwise show current question
+	// 'answers' is an object containing
+	//   'inputs'(array),
+	//   'displayAll'(bool),
+	//   'showSolution'(bool),
+	//   'indices': order of appearance
+	//   'index': current integer index (focused question)
+	props: ['questions','answers'],
 	// TODO: general render function for nested exercises
 	// There should be a questions navigator below, or next (visible if display=='all')
 	// Full questions tree is rendered, but some parts hidden depending on display settings
 	render(h) {
+		// TODO: render nothing if answers is empty
 		let domTree = this.questions.map( (q,i) => {
 			let questionContent = [ ];
 			questionContent.push(
@@ -30,7 +37,7 @@ Vue.component("statements", {
 						"input",
 						{
 							domProps: {
-								checked: this.inputs.length > 0 && this.inputs[i][idx],
+								checked: this.answers.inputs.length > 0 && this.answers.inputs[i][idx],
 								disabled: monitoring,
 							},
 							attrs: {
@@ -38,7 +45,7 @@ Vue.component("statements", {
 								type: "checkbox",
 							},
 							on: {
-								change: e => { this.inputs[i][idx] = e.target.checked; },
+								change: e => { this.answers.inputs[i][idx] = e.target.checked; },
 							},
 						},
 					)
@@ -62,8 +69,8 @@ Vue.component("statements", {
 						{
 							"class": {
 								option: true,
-								choiceCorrect: showAnswers && this.questions[i].answer.includes(idx),
-								choiceWrong: showAnswers && this.inputs[i][idx] && !questions[i].answer.includes(idx),
+								choiceCorrect: this.answers.showSolution && this.questions[i].answer.includes(idx),
+								choiceWrong: this.answers.showSolution && this.inputs[i][idx] && !q.answer.includes(idx),
 							},
 						},
 						option
@@ -86,7 +93,7 @@ Vue.component("statements", {
 				{
 					"class": {
 						"question": true,
-						"hide": index >= 0 && index != i,
+						"hide": !this.answers.displayAll && this.answers.index != i,
 					},
 				},
 				questionContent

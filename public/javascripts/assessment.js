@@ -16,8 +16,8 @@ new Vue({
 	el: "#assessment",
 	data: {
 		assessment: assessment,
-		inputs: [ ], //student's answers
-		student: { }, //filled later
+		answers: { }, //filled later with answering parameters
+		student: { }, //filled later (name, password)
 		// Stage 0: unauthenticated (number),
 		//       1: authenticated (got a name, unvalidated)
 		//       2: locked: password set, exam started
@@ -32,6 +32,9 @@ new Vue({
 			let seconds = this.remainingTime % 60;
 			let minutes = Math.floor(this.remainingTime / 60);
 			return this.padWithZero(minutes) + ":" + this.padWithZero(seconds);
+		},
+		showAnswers: function() {
+			return this.stage == 4;
 		},
 	},
 	mounted: function() {
@@ -57,11 +60,6 @@ new Vue({
 			document.location.href= "/fullscreen";
 		}, false);
 	},
-		trySendCurrentAnswer: function() {
-			if (this.stage == 2)
-				this.sendAnswer(assessment.indices[assessment.index]);
-		},
-	},
 	methods: {
 		// In case of AJAX errors
 		warning: function(message) {
@@ -72,6 +70,10 @@ new Vue({
 			if (x < 10)
 				return "0" + x;
 			return x;
+		},
+		trySendCurrentAnswer: function() {
+			if (this.stage == 2)
+				this.sendAnswer(assessment.indices[assessment.index]);
 		},
 		// stage 0 --> 1
 		getStudent: function(cb) {
@@ -110,11 +112,12 @@ new Vue({
 				// Initialize structured answer(s) based on questions type and nesting (TODO: more general)
 				if (!!questions)
 					assessment.questions = questions;
+				this.answers.inputs = [ ];
 				for (let q of assessment.questions)
 					this.inputs.push( _(q.options.length).times( _.constant(false) ) );
 				if (!paper)
 				{
-					assessment.indices = assessment.fixed
+					this.answers.indices = assessment.fixed
 						? _.range(assessment.questions.length)
 						: _.shuffle( _.range(assessment.questions.length) );
 				}
@@ -123,9 +126,9 @@ new Vue({
 					// Resuming
 					let indices = paper.inputs.map( input => { return input.index; });
 					let remainingIndices = _.difference( _.range(assessment.questions.length).map(String), indices );
-					assessment.indices = indices.concat( _.shuffle(remainingIndices) );
+					this.answers.indices = indices.concat( _.shuffle(remainingIndices) );
 				}
-				assessment.index = !!paper ? paper.inputs.length : 0;
+				this.answers.index = !!paper ? paper.inputs.length : 0;
 				Vue.nextTick(libsRefresh);
 				this.stage = 2;
 			};
@@ -145,7 +148,7 @@ new Vue({
 					{
 						// Resuming: receive stored answers + startTime
 						this.student.password = s.paper.password;
-						this.inputs = s.paper.inputs.map( inp => { return inp.input; });
+						this.answers.inputs = s.paper.inputs.map( inp => { return inp.input; });
 					}
 					else
 					{
@@ -180,7 +183,7 @@ new Vue({
 		sendAnswer: function(realIndex) {
 			let gotoNext = () => {
 				if (assessment.index == assessment.questions.length - 1)
-					this.$emit("gameover");
+					this.endAssessment();
 				else
 					assessment.index++;
 				this.$forceUpdate(); //TODO: shouldn't be required
