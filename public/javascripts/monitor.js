@@ -6,8 +6,6 @@
 // Affiché si (hash du) mdp du cours est correctement entré
 // Doit reprendre les données en base si refresh (sinon : sockets)
 
-// Also buttons "start exam", "end exam" for logged in teacher
-
 let socket = null; //monitor answers in real time
 
 new Vue({
@@ -18,6 +16,12 @@ new Vue({
 		// Stage 0: unauthenticated (password),
 		//       1: authenticated (password hash validated), start monitoring
 		stage: 0,
+		answers: {
+			displayAll: true,
+			showSolution: true, //TODO: allow to hide, to let teachers search too
+			inputs: [ ],
+			index : -1,
+		},
 	},
 	methods: {
 		// stage 0 --> 1
@@ -25,54 +29,26 @@ new Vue({
 			$.ajax("/start/monitoring", {
 				method: "GET",
 				data: {
-					password: this.,
+					password: this.password,
 					aname: examName,
 					cname: courseName,
+					initials: initials,
 				},
 				dataType: "json",
 				success: s => {
 					if (!!s.errmsg)
 						return this.warning(s.errmsg);
+					this.assessment = JSON.parse(s.assessment);
 					this.stage = 1;
-				},
-			});
-		},
-		// TODO: 2-level sockets, for prof and monitors
-					socket = io.connect("/" + assessment.name, {
-						query: "number=" + this.student.number + "&password=" + this.password
+					socket = io.connect("/", {
+						query: "aid=" + this.assessment._id + "&secret=" + s.secret
 					});
-					socket.on(message.allAnswers, this.setAnswers);
-					initializeStage2(s.questions, s.paper);
-				},
-			});
-		},
-		// stage 2 --> 3 (or 4)
-		// from a message by statements component, or time over
-		// TODO: also function startAssessment (for main teacher only)
-		endAssessment: function() {
-			// Set endTime, destroy password
-			$("#leftButton, #rightButton").show();
-			if (assessment.mode == "open")
-			{
-				this.stage = 4;
-				return;
-			}
-			$.ajax("/end/assessment", {
-				method: "GET",
-				data: {
-					aid: assessment._id,
-					number: this.student.number,
-					password: this.student.password,
-				},
-				dataType: "json",
-				success: ret => {
-					if (!!ret.errmsg)
-						return this.warning(ret.errmsg);
-					assessment.conclusion = ret.conclusion;
-					this.stage = 3;
-					delete this.student["password"]; //unable to send new answers now
-					socket.disconnect();
-					socket = null;
+					socket.on(message.newAnswer, m => {
+						let paperIdx = this.assessment.papers.findIndex( item => {
+							return item.number == m.number;
+						});
+						this.assessment.papers[paperIdx].inputs.push(m.input); //answer+index
+					});
 				},
 			});
 		},

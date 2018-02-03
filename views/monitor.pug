@@ -19,11 +19,11 @@ block content
 							label(for="password") Password
 							input#password(type="password" v-model="password" @keyup.enter="startMonitoring()")
 						button.waves-effect.waves-light.btn(@click="startMonitoring()") Send
-				#stage2(v-show="stage==1")
+				#stage1(v-show="stage==1")
 					.card
 						.introduction(v-html="assessment.introduction")
 					.card
-						statements(:assessment="assessment" :student="student" :stage="stage" :inputs="inputs" @gameover="endAssessment" @warning="warning")
+						statements(:questions="assessment.questions" :answers:"answers")
 					.card
 						.conclusion(v-html="assessment.conclusion")
 
