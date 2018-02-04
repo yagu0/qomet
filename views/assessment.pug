@@ -39,20 +39,20 @@ block content
 							if assessment.mode != "open"
 								button.waves-effect.waves-light.btn.on-left(@click="cancelStudent") Cancel
 							button.waves-effect.waves-light.btn(@click="startAssessment") Start!
-				#stage1_2_4(v-show="stage==1 || stage==2 || stage == 4")
+				#stage0_1_4(v-show="[0,1,4].includes(stage)")
 					.card
 						.introduction(v-html="assessment.introduction")
-				#stage2_4(v-show="stage==2 || stage==4")
+				#stage2_4(v-show="[2,4].includes(stage)")
 					if assessment.time > 0
-						.card
-							.timer.center(v-if="stage==2") {{ countdown }}
+						.card(v-if="stage==2")
+							.timer.center {{ countdown }}
 					.card
-						button#sendAsnwer.waves-effect.waves-light.btn(@click="sendAnswer") Send
+						button#sendAnswer.waves-effect.waves-light.btn(@click="sendAnswer") Send
 						statements(:questions="assessment.questions" :answers="answers")
 				#stage3(v-show="stage==3")
 					.card
 						.finish Exam completed &#9786; ...don't close the window!
-				#stage3_4(v-show="stage==3 || stage==4")
+				#stage3_4(v-show="[3,4].includes(stage)")
 					.card
 						.conclusion(v-html="assessment.conclusion")
 
@@ -60,5 +60,7 @@ block append javascripts
 	script.
 		let assessment = !{JSON.stringify(assessment)};
 		const monitoring = false;
+	script(src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js")
+	script(src="/javascripts/utils/libsRefresh.js")
 	script(src="/javascripts/components/statements.js")
 	script(src="/javascripts/assessment.js")

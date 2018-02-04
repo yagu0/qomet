@@ -1,1 +1,41 @@
-/* TODO */
+/* TODO: factor this piece of code from assessment (and course, and here...) */
+.question {
+	margin: 20px 5px;
+	padding: 15px 0;
+}
+.question label {
+	color: black;
+}
+.question .choiceCorrect {
+	background-color: lightgreen;
+}
+.question .choiceWrong {
+	background-color: peachpuff;
+}
+.question .wording {
+	margin-bottom: 10px;
+}
+.question .option {
+	margin-left: 15px;
+}
+.question p {
+	margin-top: 10px;
+}
+.questionInactive {
+	background-color: lightgrey;
+}
+.introduction {
+	padding: 20px 5px;
+}
+.conclusion {
+	padding: 20px 5px;
+}
+table.in-question {
+	border: 1px solid black;
+	width: auto;
+	margin: 10px auto;
+}
+table.in-question th, table.in-question td {
+	padding: 3px;
+	border-bottom: 1px solid grey;
+}

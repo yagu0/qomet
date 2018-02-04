@@ -340,8 +340,8 @@ window.onload = function() {
 					return ""; //no grade yet
 				return this.grades[assessmentIndex][studentNumber];
 			},
-			groupId: function(group, hash) {
-				return (!!hash?"#":"") + "group" + group;
+			groupId: function(group, prefix) {
+				return (prefix || "") + "group" + group;
 			},
 			togglePresence: function(number, index) {
 				// UNIMPLEMENTED

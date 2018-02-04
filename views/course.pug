@@ -144,7 +144,7 @@ block content
 							li.tab
 								a(href="#group0") All
 							li.tab(v-for="group in groupList()")
-								a(:href="groupId(group,'hash')") G.{{ group }}
+								a(:href="groupId(group,'#')") G.{{ group }}
 						table.result(:id="groupId(group)" v-for="group in [0].concat(groupList())" @click="showDetails(group)")
 							thead
 								tr

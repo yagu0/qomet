@@ -11,7 +11,7 @@ Vue.component("statements", {
 	// Full questions tree is rendered, but some parts hidden depending on display settings
 	render(h) {
 		// TODO: render nothing if answers is empty
-		let domTree = this.questions.map( (q,i) => {
+		let domTree = (this.questions || [ ]).map( (q,i) => {
 			let questionContent = [ ];
 			questionContent.push(
 				h(
@@ -70,7 +70,7 @@ Vue.component("statements", {
 							"class": {
 								option: true,
 								choiceCorrect: this.answers.showSolution && this.questions[i].answer.includes(idx),
-								choiceWrong: this.answers.showSolution && this.inputs[i][idx] && !q.answer.includes(idx),
+								choiceWrong: this.answers.showSolution && this.answers.inputs[i][idx] && !q.answer.includes(idx),
 							},
 						},
 						option
@@ -93,7 +93,7 @@ Vue.component("statements", {
 				{
 					"class": {
 						"question": true,
-						"hide": !this.answers.displayAll && this.answers.index != i,
+						"hide": !this.answers.displayAll && this.answers.indices[this.answers.index] != i,
 					},
 				},
 				questionContent
@@ -106,7 +106,7 @@ Vue.component("statements", {
 					id: "statements",
 				},
 			},
-			questions
+			domTree
 		);
 	},
 	updated: function() {

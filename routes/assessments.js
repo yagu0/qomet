@@ -9,8 +9,12 @@ const validator = require("../public/javascripts/utils/validation");
 const ObjectId = require("bson-objectid");
 const sanitizeHtml = require('sanitize-html');
 const sanitizeOpts = {
-	allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img' ]),
-	allowedAttributes: { code: [ 'class' ] },
+	allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img', 'u' ]),
+	allowedAttributes: {
+		img: [ 'src' ],
+		code: [ 'class' ],
+		table: [ 'class' ],
+	},
 };
 
 router.get("/add/assessment", access.ajax, access.logged, (req,res) => {
@@ -65,6 +69,29 @@ router.get("/start/assessment", access.ajax, (req,res) => {
 				});
 			}
 			res.json(ret); //contains questions+password(or paper if resuming)
+		});
+	});
+});
+
+router.get("/start/monitoring", access.ajax, (req,res) => {
+	const password = req.query["password"];
+	const examName = req.query["aname"];
+	const courseCode = req.query["ccode"];
+	const initials = req.query["initials"];
+	// TODO: sanity checks
+	CourseModel.getByRefs(initials, courseCode, (err,course) => {
+		access.checkRequest(res,err,course,"Course not found", () => {
+			if (password != course.password)
+				return res.json({errmsg: "Wrong password"});
+			AssessmentModel.getByRefs(initials, courseCode, examName, (err2,assessment) => {
+				access.checkRequest(res,err2,assessment,"Assessment not found", () => {
+					res.json({
+						students: course.students,
+						assessment: assessment,
+						secret: params.secret,
+					});
+				});
+			});
 		});
 	});
 });

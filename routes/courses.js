@@ -74,4 +74,6 @@ router.get('/remove/course', access.ajax, access.logged, (req,res) => {
 	});
 });
 
+// TODO: grading page (for at least partially open-questions exams)
+
 module.exports = router;

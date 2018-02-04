@@ -126,16 +126,17 @@ router.get("/:initials([a-z0-9]+)/:courseCode([a-z0-9._-]+)/:assessmentName([a-z
 	});
 });
 
-// Monitor: --> after identification (password), always send password hash with requests
+// Monitor: --> after identification (password), always send secret with requests
 router.get("/:initials([a-z0-9]+)/:courseCode([a-z0-9._-]+)/:assessmentName([a-z0-9._-]+)/monitor", (req,res) => {
 	let initials = req.params["initials"];
 	let code = req.params["courseCode"];
 	let name = req.params["assessmentName"];
+	// TODO: if (main) teacher, also send secret, saving one request
 	res.render("monitor", {
 		title: "monitor assessment " + code + "/" + name,
 		initials: initials,
-		code: code,
-		name: name,
+		courseCode: code,
+		examName: name,
 	});
 });
 

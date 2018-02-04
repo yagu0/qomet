@@ -23,6 +23,18 @@ const AssessmentModel =
 		});
 	},
 
+	checkPassword: function(aid, number, password, cb)
+	{
+		AssessmentEntity.getById(aid, (err,assessment) => {
+			if (!!err || !assessment)
+				return cb(err, assessment);
+			const paperIdx = assessment.papers.findIndex( item => { return item.number == number; });
+			if (paperIdx === -1)
+				return cb({errmsg: "Paper not found"}, false);
+			cb(null, assessment.papers[paperIdx].password == password);
+		});
+	},
+
 	add: function(uid, cid, name, cb)
 	{
 		// 1) Check that course is owned by user of ID uid
@@ -38,9 +50,9 @@ const AssessmentModel =
 
 	update: function(uid, assessment, cb)
 	{
-		const qid = ObjectId(assessment._id);
+		const aid = ObjectId(assessment._id);
 		// 1) Check that assessment is owned by user of ID uid
-		AssessmentEntity.getById(qid, (err,assessmentOld) => {
+		AssessmentEntity.getById(aid, (err,assessmentOld) => {
 			if (!!err || !assessmentOld)
 				return cb({errmsg: "Assessment retrieval failure"});
 			CourseEntity.getById(ObjectId(assessmentOld.cid), (err2,course) => {
@@ -51,7 +63,7 @@ const AssessmentModel =
 				// 2) Replace assessment
 				delete assessment["_id"];
 				assessment.cid = ObjectId(assessment.cid);
-				AssessmentEntity.replace(qid, assessment, cb);
+				AssessmentEntity.replace(aid, assessment, cb);
 			});
 		});
 	},
@@ -62,12 +74,14 @@ const AssessmentModel =
 		AssessmentEntity.getPaperByNumber(aid, number, (err,paper) => {
 			if (!!err)
 				return cb(err,null);
+			if (!paper && !!password)
+				return cb({errmsg: "Cannot start a new exam before finishing current"},null);
 			if (!!paper)
 			{
 				if (!password)
-					return cb({errmsg:"Missing password"});
+					return cb({errmsg: "Missing password"});
 				if (paper.password != password)
-					return cb({errmsg:"Wrong password"});
+					return cb({errmsg: "Wrong password"});
 			}
 			AssessmentEntity.getQuestions(aid, (err,questions) => {
 				if (!!err)

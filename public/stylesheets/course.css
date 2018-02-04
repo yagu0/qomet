@@ -54,3 +54,14 @@ tr.stats {
 .conclusion {
 	margin-bottom: 20px;
 }
+
+table.in-question {
+	border: 1px solid black;
+	width: auto;
+	margin: 10px auto;
+}
+
+table.in-question th, table.in-question td {
+	padding: 3px;
+	border-bottom: 1px solid grey;
+}

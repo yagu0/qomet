@@ -16,8 +16,7 @@ Individual answers to an exam are monitored in real time, and feedback is sent
 to each participant in the end (answers, computing grade).
 Once a series of exam is over, the teacher can get all grades in CSV format from course page.
 
-*Note:* for now the monitoring + socket part is still unimplemented,
-and exams composition is limited to single question exercises.
+*Note:* for now exams composition is limited to single question exercises.
 Automatic grades are also not available.
 
 ## Installation

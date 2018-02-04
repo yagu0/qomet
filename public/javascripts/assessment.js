@@ -12,7 +12,7 @@ function checkWindowSize()
 	return window.innerWidth >= screen.width-3 && window.innerHeight >= screen.height-3;
 };
 
-new Vue({
+let V = new Vue({
 	el: "#assessment",
 	data: {
 		assessment: assessment,
@@ -62,7 +62,7 @@ new Vue({
 	},
 	methods: {
 		// In case of AJAX errors
-		warning: function(message) {
+		showWarning: function(message) {
 			this.warnMsg = message;
 			$("#warning").modal("open");
 		},
@@ -73,7 +73,7 @@ new Vue({
 		},
 		trySendCurrentAnswer: function() {
 			if (this.stage == 2)
-				this.sendAnswer(assessment.indices[assessment.index]);
+				this.sendAnswer();
 		},
 		// stage 0 --> 1
 		getStudent: function(cb) {
@@ -86,7 +86,7 @@ new Vue({
 				dataType: "json",
 				success: s => {
 					if (!!s.errmsg)
-						return this.warning(s.errmsg);
+						return this.showWarning(s.errmsg);
 					this.stage = 1;
 					this.student = s.student;
 					Vue.nextTick( () => { Materialize.updateTextFields(); });
@@ -114,7 +114,7 @@ new Vue({
 					assessment.questions = questions;
 				this.answers.inputs = [ ];
 				for (let q of assessment.questions)
-					this.inputs.push( _(q.options.length).times( _.constant(false) ) );
+					this.answers.inputs.push( _(q.options.length).times( _.constant(false) ) );
 				if (!paper)
 				{
 					this.answers.indices = assessment.fixed
@@ -129,7 +129,7 @@ new Vue({
 					this.answers.indices = indices.concat( _.shuffle(remainingIndices) );
 				}
 				this.answers.index = !!paper ? paper.inputs.length : 0;
-				Vue.nextTick(libsRefresh);
+				Vue.nextTick(statementsLibsRefresh);
 				this.stage = 2;
 			};
 			if (assessment.mode == "open")
@@ -143,7 +143,7 @@ new Vue({
 				dataType: "json",
 				success: s => {
 					if (!!s.errmsg)
-						return this.warning(s.errmsg);
+						return this.showWarning(s.errmsg);
 					if (!!s.paper)
 					{
 						// Resuming: receive stored answers + startTime
@@ -157,7 +157,7 @@ new Vue({
 						// action (power failure, computer down, ...)
 					}
 					socket = io.connect("/" + assessment.name, {
-						query: "number=" + this.student.number + "&password=" + this.password
+						query: "aid=" + assessment._id + "&number=" + this.student.number + "&password=" + this.student.password
 					});
 					socket.on(message.allAnswers, this.setAnswers);
 					initializeStage2(s.questions, s.paper);
@@ -171,30 +171,31 @@ new Vue({
 			let self = this;
 			setInterval( function() {
 				self.remainingTime--;
-				if (self.remainingTime <= 0 || self.stage >= 4)
-					self.endAssessment();
+				if (self.remainingTime <= 0)
+				{
+					if (self.stage == 2)
+						self.endAssessment();
 					clearInterval(this);
+				}
 			}, 1000);
 		},
 		// stage 2
-		// TODO: currentIndex ? click: () => this.sendAnswer(assessment.indices[assessment.index]),
-		// De même, cette condition sur le display d'une question doit remonter (résumée dans 'index' property) :
-		// à faire par ici : "hide": this.stage == 2 && assessment.display == 'one' && assessment.indices[assessment.index] != i,
-		sendAnswer: function(realIndex) {
+		sendAnswer: function() {
+			const realIndex = this.answers.indices[this.answers.index];
 			let gotoNext = () => {
-				if (assessment.index == assessment.questions.length - 1)
+				if (this.answers.index == assessment.questions.length - 1)
 					this.endAssessment();
 				else
-					assessment.index++;
-				this.$forceUpdate(); //TODO: shouldn't be required
+					this.answers.index++;
+				this.$children[0].$forceUpdate(); //TODO: bad HACK, and shouldn't be required...
 			};
 			if (assessment.mode == "open")
 				return gotoNext(); //only local
 			let answerData = {
 				aid: assessment._id,
 				answer: JSON.stringify({
-					index:realIndex.toString(),
-					input:this.inputs[realIndex]
+					index: realIndex.toString(),
+					input: this.answers.inputs[realIndex]
 						.map( (tf,i) => { return {val:tf,idx:i}; } )
 						.filter( item => { return item.val; })
 						.map( item => { return item.idx; })
@@ -208,9 +209,8 @@ new Vue({
 				dataType: "json",
 				success: ret => {
 					if (!!ret.errmsg)
-						return this.$emit("warning", ret.errmsg);
-					else
-						gotoNext();
+						return this.showWarning(ret.errmsg);
+					gotoNext();
 					socket.emit(message.newAnswer, answerData);
 				},
 			});
@@ -235,7 +235,7 @@ new Vue({
 				dataType: "json",
 				success: ret => {
 					if (!!ret.errmsg)
-						return this.warning(ret.errmsg);
+						return this.showWarning(ret.errmsg);
 					assessment.conclusion = ret.conclusion;
 					this.stage = 3;
 					delete this.student["password"]; //unable to send new answers now
@@ -245,9 +245,9 @@ new Vue({
 			});
 		},
 		// stage 3 --> 4 (on socket message "feedback")
-		setAnswers: function(answers) {
-			for (let i=0; i<answers.length; i++)
-				assessment.questions[i].answer = answers[i];
+		setAnswers: function(m) {
+			for (let i=0; i<m.answers.length; i++)
+				assessment.questions[i].answer = m.answers[i];
 			this.stage = 4;
 		},
 	},

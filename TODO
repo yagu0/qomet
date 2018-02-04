@@ -1,5 +1,11 @@
-permettre temps par question : gestion côté serveur, y réfléchir...
-auto grading + finish erdiag + corr tp1
+Replace underscore by lodash (or better: ES6)
+Replace socket.io by Websockets ( https://www.npmjs.com/package/websocket )
+
+time per question (in mode "one question at a time" from server...)
+compute grades after exam (in teacher's view)
+factorize redundant code in course.js, monitor.js and (TOWRITE) grade.js
+  (showing students list + grades or papers)
+
 -----
 
 TODO: format général TXT: (compilé en JSON)
