@@ -5,6 +5,7 @@ time per question (in mode "one question at a time" from server...)
 compute grades after exam (in teacher's view)
 factorize redundant code in course.js, monitor.js and (TOWRITE) grade.js
   (showing students list + grades or papers)
+monitoring: main teacher should not be asked for pwd, and button "send feedback" hidden for others
 
 -----
 

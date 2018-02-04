@@ -81,7 +81,11 @@ new Vue({
 					if (!!s.errmsg)
 						return alert(s.errmsg);
 					this.assessment = s.assessment;
-					this.answers.inputs = s.assessment.questions.map( q => { return q.answer; });
+					this.answers.inputs = s.assessment.questions.map( q => {
+						let input = _(q.options.length).times( _.constant(false) );
+						q.answer.forEach( idx => { input[idx] = true; });
+						return input;
+					});
 					this.students = s.students;
 					this.stage = 1;
 					socket = io.connect("/", {
