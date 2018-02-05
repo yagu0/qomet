@@ -42,7 +42,7 @@ block content
 				#stage0_1_4(v-show="[0,1,4].includes(stage)")
 					.card
 						.introduction(v-html="assessment.introduction")
-				#stage2_4(v-show="[2,4].includes(stage)")
+				#stage2_4(v-if="[2,4].includes(stage)")
 					if assessment.time > 0
 						.card(v-if="stage==2")
 							.timer.center {{ countdown }}
