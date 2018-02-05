@@ -1,5 +1,3 @@
-Debug exam mode (and open too...): Vue.js warning + shift questions (not showing solution)
-
 Replace underscore by lodash (or better: ES6)
 Replace socket.io by Websockets ( https://www.npmjs.com/package/websocket )
 

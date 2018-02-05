@@ -109,6 +109,9 @@ Vue.component("statements", {
 			domTree
 		);
 	},
+	mounted: function() {
+		statementsLibsRefresh();
+	},
 	updated: function() {
 		// TODO: next line shouldn't be required: questions wordings + answer + options
 		// are processed earlier; their content should be updated at this time.

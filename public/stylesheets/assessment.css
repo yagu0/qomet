@@ -4,7 +4,7 @@ a#rightButton {
 	right: 0;
 }
 
-button#sendAnswer {
+button.sendAnswer {
 	display: block;
 	margin: 0 auto;
 }

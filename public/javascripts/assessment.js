@@ -129,7 +129,8 @@ let V = new Vue({
 					this.answers.indices = indices.concat( _.shuffle(remainingIndices) );
 				}
 				this.answers.index = !!paper ? paper.inputs.length : 0;
-				Vue.nextTick(statementsLibsRefresh);
+				this.answers.displayAll = assessment.display == "all";
+				this.answers.showSolution = false;
 				this.stage = 2;
 			};
 			if (assessment.mode == "open")
@@ -223,6 +224,7 @@ let V = new Vue({
 			if (assessment.mode == "open")
 			{
 				this.stage = 4;
+				this.answers.showSolution = true;
 				return;
 			}
 			$.ajax("/end/assessment", {
@@ -248,6 +250,7 @@ let V = new Vue({
 		setAnswers: function(m) {
 			for (let i=0; i<m.answers.length; i++)
 				assessment.questions[i].answer = m.answers[i];
+			this.answers.showSolution = true;
 			this.stage = 4;
 		},
 	},

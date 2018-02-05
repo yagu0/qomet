@@ -44,11 +44,13 @@ block content
 						.introduction(v-html="assessment.introduction")
 				#stage2_4(v-if="[2,4].includes(stage)")
 					if assessment.time > 0
-						.card(v-if="stage==2")
+						.card(v-show="stage==2")
 							.timer.center {{ countdown }}
 					.card
-						button#sendAnswer.waves-effect.waves-light.btn(@click="sendAnswer") Send
+						button.sendAnswer.waves-effect.waves-light.btn(@click="sendAnswer") Send
 						statements(:questions="assessment.questions" :answers="answers")
+						if assessment.display == "all"
+							button.sendAnswer.waves-effect.waves-light.btn(@click="sendAnswer") Send
 				#stage3(v-show="stage==3")
 					.card
 						.finish Exam completed &#9786; ...don't close the window!
