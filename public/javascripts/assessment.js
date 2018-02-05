@@ -181,7 +181,7 @@ let V = new Vue({
 			}, 1000);
 		},
 		// stage 2
-		sendAnswer: function() {
+		sendOneAnswer: function() {
 			const realIndex = this.answers.indices[this.answers.index];
 			let gotoNext = () => {
 				if (this.answers.index == assessment.questions.length - 1)
@@ -215,6 +215,13 @@ let V = new Vue({
 					socket.emit(message.newAnswer, answerData);
 				},
 			});
+		},
+		// TODO: I don't like that + sending should not be definitive in exam mode with display = all
+		sendAnswer: function() {
+			if (assessment.display == "one")
+				sendOneAnswer();
+			else
+				assessment.questions.forEach(sendOneAnswer);
 		},
 		// stage 2 --> 3 (or 4)
 		// from a message by statements component, or time over
