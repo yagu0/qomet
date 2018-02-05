@@ -1,7 +1,7 @@
 Vue.component("statements", {
 	// 'answers' is an object containing
 	//   'inputs'(array),
-	//   'displayAll'(bool),
+	//   'displayAll'(bool), //TODO: should be in questions!
 	//   'showSolution'(bool),
 	//   'indices': order of appearance
 	//   'index': current integer index (focused question)
@@ -88,6 +88,8 @@ Vue.component("statements", {
 					optionList
 				)
 			);
+			if (this.answers.displayAll && i < this.questions.length-1)
+				questionContent.push( h("hr") );
 			return h(
 				"div",
 				{
