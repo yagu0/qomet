@@ -219,9 +219,9 @@ let V = new Vue({
 		// TODO: I don't like that + sending should not be definitive in exam mode with display = all
 		sendAnswer: function() {
 			if (assessment.display == "one")
-				sendOneAnswer();
+				this.sendOneAnswer();
 			else
-				assessment.questions.forEach(sendOneAnswer);
+				assessment.questions.forEach(this.sendOneAnswer);
 		},
 		// stage 2 --> 3 (or 4)
 		// from a message by statements component, or time over
