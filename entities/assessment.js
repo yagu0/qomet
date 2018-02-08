@@ -27,6 +27,8 @@ const AssessmentEntity =
 	 *     number: student number
 	 *     inputs: array of indexed arrays of integers (or html text if not quiz)
 	 *     startTime, endTime
+	 *     discoTime, totalDisco: last disconnect timestamp (if relevant) + total
+	 *     discoCount: total disconnections
 	 *     password: random string identifying student for exam session TEMPORARY
 	 */
 
@@ -134,6 +136,8 @@ const AssessmentEntity =
 				startTime: Date.now(),
 				endTime: undefined,
 				password: password,
+				totalDisco: 0,
+				discoCount: 0,
 				inputs: [ ], //TODO: this is stage 1, stack indexed answers.
 				// then build JSON tree for easier access / correct
 			}}},
@@ -141,6 +145,47 @@ const AssessmentEntity =
 		);
 	},
 
+	// NOTE: no callbacks for 2 next functions, failures are not so important
+	// (because monitored: teachers can see what's going on)
+
+	addDisco: function(aid, number, deltaTime)
+	{
+		db.assessments.update(
+			{
+				_id: aid,
+				"papers.number": number,
+			},
+			{ $inc: {
+				"papers.$.discoCount": 1,
+				"papers.$.totalDisco": deltaTime,
+			} },
+			{ $set: { "papers.$.discoTime": null } }
+		);
+	},
+
+	setDiscoTime: function(aid, number)
+	{
+		db.assessments.update(
+			{
+				_id: aid,
+				"papers.number": number,
+			},
+			{ $set: { "papers.$.discoTime": Date.now() } }
+		);
+	},
+
+	getDiscoTime: function(aid, number, cb)
+	{
+		db.assessments.findOne(
+			{ _id: aid },
+			(err,a) => {
+				if (!!err)
+					return cb(err, null);
+				const idx = a.papers.findIndex( item => { return item.number == number; });
+				cb(null, a.papers[idx].discoTime);
+			}
+		);
+	},
 
 	hasInput: function(aid, number, password, idx, cb)
 	{

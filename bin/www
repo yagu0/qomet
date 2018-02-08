@@ -4,28 +4,28 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var http = require('http');
+const app = require('../app');
+const http = require('http');
 
 /**
  * Get port from environment and store in Express.
  */
 
-let port = normalizePort(process.env.PORT || '3000');
+const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
 /**
  * Create HTTP server.
  */
 
-let server = http.createServer(app);
+const server = http.createServer(app);
 
 /*
  * CRON tasks
  */
 
-var cron = require('node-cron');
-var UserModel = require("../models/user");
+const cron = require('node-cron');
+const UserModel = require("../models/user");
 cron.schedule('0 0 0 * * *', function() {
 	// Remove unlogged users every 24h
 	UserModel.cleanUsersDb();
@@ -38,8 +38,7 @@ cron.schedule('0 0 0 * * *', function() {
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
-let io = require('socket.io').listen(server); //sockets too
-//https://stackoverflow.com/a/24610678/4640434
+const io = require('socket.io').listen(server);
 
 /*
  * Sockets handling
@@ -53,7 +52,7 @@ require('../sockets')(io);
 
 function normalizePort(val)
 {
-  let port = parseInt(val, 10);
+  const port = parseInt(val, 10);
 
   if (isNaN(port)) // named pipe
     return val;
@@ -99,8 +98,8 @@ function onError(error)
 
 function onListening()
 {
-  let addr = server.address();
-  let bind = typeof addr === 'string'
+  const addr = server.address();
+  const bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   console.log('Listening on ' + bind);

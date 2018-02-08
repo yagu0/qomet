@@ -115,6 +115,18 @@ const AssessmentModel =
 		});
 	},
 
+	// NOTE: no callbacks for 2 next functions, failures are not so important
+	// (because monitored: teachers can see what's going on)
+
+	newConnection: function(aid, number)
+	{
+		//increment discoCount, reset discoTime to NULL, update totalDisco
+		AssessmentEntity.getDiscoTime(aid, number, (err,discoTime) => {
+			if (!!discoTime)
+				AssessmentEntity.addDisco(aid, number, discoTime - Date.now());
+		});
+	},
+
 	endSession: function(aid, number, password, cb)
 	{
 		AssessmentEntity.endAssessment(aid, number, password, (err,ret) => {

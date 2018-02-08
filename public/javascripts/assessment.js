@@ -157,7 +157,7 @@ let V = new Vue({
 						// Got password: students answers locked to this page until potential teacher
 						// action (power failure, computer down, ...)
 					}
-					socket = io.connect("/" + assessment.name, {
+					socket = io.connect("/", {
 						query: "aid=" + assessment._id + "&number=" + this.student.number + "&password=" + this.student.password
 					});
 					socket.on(message.allAnswers, this.setAnswers);
@@ -232,6 +232,7 @@ let V = new Vue({
 			{
 				this.stage = 4;
 				this.answers.showSolution = true;
+				this.answers.displayAll = true;
 				return;
 			}
 			$.ajax("/end/assessment", {
@@ -248,17 +249,19 @@ let V = new Vue({
 					assessment.conclusion = ret.conclusion;
 					this.stage = 3;
 					delete this.student["password"]; //unable to send new answers now
-					socket.disconnect();
-					socket = null;
 				},
 			});
 		},
 		// stage 3 --> 4 (on socket message "feedback")
 		setAnswers: function(m) {
-			for (let i=0; i<m.answers.length; i++)
-				assessment.questions[i].answer = m.answers[i];
+			const answers = JSON.parse(m.answers);
+			for (let i=0; i<answers.length; i++)
+				assessment.questions[i].answer = answers[i];
 			this.answers.showSolution = true;
+			this.answers.displayAll = true;
 			this.stage = 4;
+			socket.disconnect();
+			socket = null;
 		},
 	},
 });

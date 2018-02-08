@@ -105,7 +105,7 @@ new Vue({
 							});
 						}
 						// TODO: notations not coherent (input / answer... when, which ?)
-						this.assessment.papers[paperIdx].inputs.push(m.answer); //input+index
+						this.assessment.papers[paperIdx].inputs.push(JSON.parse(m.answer)); //input+index
 					});
 				},
 			});
@@ -114,7 +114,7 @@ new Vue({
 			// In the end, send answers to students
 			socket.emit(
 				message.allAnswers,
-				{ answers: this.assessment.questions.map( q => { return q.answer; }) }
+				{ answers: JSON.stringify(this.assessment.questions.map( q => { return q.answer; })) }
 			);
 		},
 	},

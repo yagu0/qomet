@@ -26,6 +26,9 @@ Validator.Paper = {
 	"inputs": Validator.Input,
 	"startTime": "positiveInteger",
 	"endTime": "positiveInteger",
+	"discoTime": "positiveInteger",
+	"discoCount": "positiveInteger",
+	"totalDisco": "positiveInteger",
 	"password": "password",
 };
 
