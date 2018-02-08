@@ -123,7 +123,7 @@ const AssessmentModel =
 		//increment discoCount, reset discoTime to NULL, update totalDisco
 		AssessmentEntity.getDiscoTime(aid, number, (err,discoTime) => {
 			if (!!discoTime)
-				AssessmentEntity.addDisco(aid, number, discoTime - Date.now());
+				AssessmentEntity.addDisco(aid, number, Date.now() - discoTime);
 		});
 	},
 
