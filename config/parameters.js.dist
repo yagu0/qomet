@@ -6,7 +6,7 @@ Parameters.siteURL = "http://localhost";
 // Lifespan of a (login) cookie
 Parameters.cookieExpire = 183*24*3600*1000; //6 months in milliseconds
 
-// Secret string used in monitoring page + review
+// Secret string used in monitoring page + review; avoid special URL chars '?' '&' '='
 Parameters.secret = "ImNotSoSecretChangeMe";
 
 // Characters in a login token, and period of validity (in milliseconds)
