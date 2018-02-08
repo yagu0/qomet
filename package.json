@@ -18,11 +18,11 @@
     "bson-objectid": "^1.2.2",
     "cookie-parser": "^1.4.3",
     "express": "^4.16.2",
-    "mongojs": "^2.4.1",
+    "mongojs": "^2.5.0",
     "morgan": "^1.9.0",
     "node-cron": "^1.2.1",
     "pug": "^2.0.0-rc.4",
-    "sanitize-html": "^1.16.3",
+    "sanitize-html": "^1.17.0",
     "serve-favicon": "^2.4.5",
     "socket.io": "^2.0.4",
     "underscore": "^1.8.3"
