@@ -89,7 +89,8 @@ block content
 						tbody
 							tr.grade(v-for="student in studentList(group)")
 								td {{ student.number }}
-								td(v-for="(assessment,i) in assessmentArray" @click="togglePresence(student.number,i)") {{ grade(i,student.number) }}
+								td(v-for="(assessment,i) in assessmentArray" @click="togglePresence(student.number,i)")
+									{{ grade(i,student.number) }}
 				.modal-footer
 					.center-align
 						a.modal-action.modal-close.waves-effect.waves-light.btn-flat(href="#!") Close
@@ -105,13 +106,11 @@ block content
 							thead
 								tr
 									th Number
-									th Forename
 									th Name
 									th Group
 							tbody
 								tr.student(v-for="student in studentList(0)")
 									td {{ student.number }}
-									td {{ student.forename }}
 									td {{ student.name }}
 									td {{ student.group }}
 				h4.title(@click="toggleDisplay('assessments')") Assessments
@@ -119,7 +118,8 @@ block content
 					if teacher
 						.center-align
 							a.on-left.waves-effect.waves-light.btn.modal-trigger(href="#newAssessment") New assessment
-							input#password(type="password" v-model="monitorPwd" @keyup.enter="setPassword" placeholder="Password" title="Monitoring password")
+							input#password(type="password" v-model="monitorPwd" @keyup.enter="setPassword"
+									placeholder="Password" title="Monitoring password")
 					table
 						thead
 							tr
@@ -128,7 +128,8 @@ block content
 								th #Questions
 								th Time
 						tbody
-							tr.assessment(v-for="(assessment,i) in assessmentArray" @click.left="actionAssessment(i)" @contextmenu.prevent="deleteAssessment(assessment)")
+							tr.assessment(v-for="(assessment,i) in assessmentArray" v-if="assessment.active"
+									@click.left="actionAssessment(i)" @contextmenu.prevent="deleteAssessment(assessment)")
 								td {{ assessment.name }}
 								td {{ assessment.mode }}
 								td {{ assessment.questions.reduce( (a,b) => { return b.active ? a+1 : a; }, 0) }}
@@ -149,13 +150,11 @@ block content
 							thead
 								tr
 									th Number
-									th Forename
 									th Name
 									th Final
 							tbody
 								tr.grade(v-for="student in studentList(group)")
 									td {{ student.number }}
-									td {{ student.forename }}
 									td {{ student.name }}
 									td grade...
 									//td {{ grades[student.number].final }}

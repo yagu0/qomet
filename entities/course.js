@@ -11,7 +11,6 @@ const CourseEntity =
 	 *   password: monitoring password hash
 	 *   students: array of
 	 *     number: student number
-	 *     forename: varchar
 	 *     name: varchar
 	 *     group: integer
 	 */

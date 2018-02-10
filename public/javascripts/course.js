@@ -57,12 +57,7 @@ window.onload = function() {
 				return this.course.students
 					.filter( s => { return group==0 || s.group == group; })
 					.map( s => { return Object.assign({}, s); }) //not altering initial array
-					.sort( (a,b) => {
-						let res = a.name.localeCompare(b.name);
-						if (res == 0)
-							res += a.forename.localeCompare(b.forename);
-						return res;
-					});
+					.sort( (a,b) => { return a.name.localeCompare(b.name); })
 			},
 			// STUDENTS:
 			uploadTrigger: function() {
@@ -311,7 +306,7 @@ window.onload = function() {
 							s["final"] = finalGrade; //TODO: forbid "final" as assessment name
 						});
 					}
-					data.push(s); //number,forename,name,group,assessName1...assessNameN,final
+					data.push(s); //number,name,group,assessName1...assessNameN,final
 				});
 				let csv = Papa.unparse(data, {
 					quotes: true,

@@ -29,12 +29,7 @@ new Vue({
 			return this.students
 				.filter( s => { return group==0 || s.group == group; })
 				.map( s => { return Object.assign({}, s); }) //not altering initial array
-				.sort( (a,b) => {
-					let res = a.name.localeCompare(b.name);
-					if (res == 0)
-						res += a.forename.localeCompare(b.forename);
-					return res;
-				});
+				.sort( (a,b) => { return a.name.localeCompare(b.name); });
 		},
 		groupList: function() {
 			let maxGrp = 1;

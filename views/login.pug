@@ -13,9 +13,6 @@ block content
 							input#email.validate(type="email", ref="userEmail", v-model="user.email", required)
 							label(for="email") Email
 						.input-field(v-show="stage=='register'")
-							input#forename.validate(type="text", v-model="user.forename", :required="stage=='register'")
-							label(for="forename") Forename
-						.input-field(v-show="stage=='register'")
 							input#name.validate(type="text", v-model="user.name", :required="stage=='register'")
 							label(for="name") Name
 						#submit.center-align

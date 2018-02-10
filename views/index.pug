@@ -11,9 +11,7 @@ block content
 					thead
 						tr
 							th Name
-							th Forename
 					tbody
 						each user in userArray
 							tr.teacher(onClick="document.location.href='/" + user.initials+ "'")
 								td= user.name
-								td= user.forename

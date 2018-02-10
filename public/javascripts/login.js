@@ -25,7 +25,6 @@ window.onload = function() {
 		data: {
 			messages: messages,
 			user: {
-				forename: "",
 				name: "",
 				email: "",
 			},
@@ -52,7 +51,7 @@ window.onload = function() {
 				}
 				let error = Validator.checkObject({email: this.user.email}, "User");
 				if (!error && this.stage == "register")
-					error = Validator.checkObject({forename: this.user.forename, name: this.user.name}, "User");
+					error = Validator.checkObject({name: this.user.name}, "User");
 				let $dialog = $("#dialog");
 				show($dialog);
 				setTimeout(() => {hide($dialog);}, 3000);
@@ -65,14 +64,12 @@ window.onload = function() {
 						data:
 						{
 							email: encodeURIComponent(this.user.email),
-							forename: encodeURIComponent(this.user.forename), //may be unused
 							name: encodeURIComponent(this.user.name), //may be unused
 						},
 						dataType: "json",
 						success: res => {
 							if (!res.errmsg)
 							{
-								this.user["forename"] = "";
 								this.user["name"] = "";
 								this.user["email"] = "";
 								showMsg($dialog, "info", infos[this.stage]);

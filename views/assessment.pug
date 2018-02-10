@@ -29,9 +29,6 @@ block content
 				#stage1(v-show="stage==1")
 					.card
 						if assessment.mode != "open"
-							.input-field.inline.on-left
-								label(for="forename") Forename
-								input#forename(type="text" v-model="student.forename" disabled)
 							.input-field.inline
 								label(for="name") Name
 								input#name(type="text" v-model="student.name" disabled)

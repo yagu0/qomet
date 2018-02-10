@@ -7,7 +7,6 @@ const UserEntity =
 	 *   _id: BSON id
 	 *   ** Strings, identification informations:
 	 *   email
-	 *   forename
 	 *   name
 	 *   initials : computed, Benjamin Auder --> ba ...etc
 	 *   loginToken: {

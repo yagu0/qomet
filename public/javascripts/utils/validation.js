@@ -51,7 +51,6 @@ Validator.Assessment = {
 Validator.User = {
 	"_id": "bson",
 	"email": "email",
-	"forename": "name",
 	"name": "name",
 	"initials": "unchecked", //not a user input
 	"loginToken": "unchecked",
@@ -61,7 +60,6 @@ Validator.User = {
 
 Validator.Student = {
 	"number": "code",
-	"forename": "name",
 	"name": "name",
 	"group": "positiveInteger",
 };

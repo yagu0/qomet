@@ -27,12 +27,10 @@ block content
 						table(:id="groupId(group)" v-for="group in [0].concat(groupList())")
 							thead
 								tr
-									th Forename
 									th Name
 									th(v-for="(q,i) in assessment.questions") Q.{{ (i+1) }}
 							tbody
 								tr.assessment(v-for="s in studentList(group)")
-									td {{ s.forename }}
 									td {{ s.name }}
 									td(v-for="(q,i) in assessment.questions" :style="{backgroundColor: getColor(s.number,i)}" @click="seeDetails(s.number,i)") &nbsp;
 					h4.title(@click="toggleDisplay('assessment')") Assessment

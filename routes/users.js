@@ -31,12 +31,10 @@ function sendLoginToken(subject, to, res)
 
 router.get('/register', access.ajax, access.unlogged, (req,res) => {
 	let email = decodeURIComponent(req.query.email);
-	let forename = decodeURIComponent(req.query.forename);
 	let name = decodeURIComponent(req.query.name);
 	const newUser = {
 		email: email,
 		name: name,
-		forename: forename,
 	};
 	let error = validator(newUser, "User");
 	if (error.length > 0)

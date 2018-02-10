@@ -5,12 +5,9 @@ const UserModel =
 {
 	create: function(newUser, callback)
 	{
-		// Determine initials from forename+name
-		let forenameParts = newUser.forename.split(/[ -]+/);
+		// Determine initials from name parts
 		let nameParts = newUser.name.split(/[ -]+/);
-		let initials =
-			forenameParts.map( n => { return n.charAt(0).toLowerCase(); }).join("") +
-			nameParts.map( n => { return n.charAt(0).toLowerCase(); }).join("");
+		let initials = nameParts.map( n => { return n.charAt(0).toLowerCase(); }).join("");
 		// First retrieve all users with similar prefix initials
 		UserEntity.getInitialsByPrefix(initials, (err,userArray) => {
 			if (!!userArray && userArray.length == 1)
