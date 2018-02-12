@@ -11,9 +11,10 @@ const sanitizeHtml = require('sanitize-html');
 const sanitizeOpts = {
 	allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img', 'u' ]),
 	allowedAttributes: {
-		img: [ 'src' ],
+		img: [ 'src','style' ],
 		code: [ 'class' ],
 		table: [ 'class' ],
+		div: [ 'style' ],
 	},
 };
 

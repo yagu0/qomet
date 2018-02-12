@@ -48,6 +48,7 @@ Vue.component("statements", {
 								change: e => { this.answers.inputs[i][idx] = e.target.checked; },
 							},
 						},
+						[ '' ] //to work in Firefox 45.9 ESR @ ENSTA...
 					)
 				);
 				option.push(

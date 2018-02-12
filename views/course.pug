@@ -90,12 +90,12 @@ block content
 							tr.grade(v-for="student in studentList(group)")
 								td {{ student.number }}
 								td(v-for="(assessment,i) in assessmentArray" @click="togglePresence(student.number,i)")
-									{{ grade(i,student.number) }}
+									| {{ grade(i,student.number) }}
 				.modal-footer
 					.center-align
 						a.modal-action.modal-close.waves-effect.waves-light.btn-flat(href="#!") Close
 		.row(v-show="mode=='view'")
-			.col.s12.m10.offset-m1.l8.offset-l2.xl6.offset-xl3
+			.col.s12.m10.offset-m1
 				if teacher
 					h4.title(@click="toggleDisplay('students')") Students
 					.card(v-show="display=='students'")
@@ -128,7 +128,7 @@ block content
 								th #Questions
 								th Time
 						tbody
-							tr.assessment(v-for="(assessment,i) in assessmentArray" v-if="assessment.active"
+							tr.assessment(v-for="(assessment,i) in assessmentArray" :class="{idle:!assessment.active}"
 									@click.left="actionAssessment(i)" @contextmenu.prevent="deleteAssessment(assessment)")
 								td {{ assessment.name }}
 								td {{ assessment.mode }}
@@ -162,7 +162,7 @@ block content
 									td(colspan="4") Stats: range= stdev= mean=
 		if teacher
 			.row(v-show="mode=='edit'")
-				.col.s12.m10.offset-m1.l8.offset-l2.xl6.offset-xl3
+				.col.s12.m10.offset-m1
 					h4 {{ assessment.name }}
 					.card
 						.center-align

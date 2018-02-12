@@ -3,6 +3,11 @@ h4.title {
 	background-color: lightgrey;
 }
 
+.idle {
+	background-color: #EFEFEF;
+	opacity: 0.5;
+}
+
 tr.assessment {
 	cursor: pointer;
 }
@@ -33,6 +38,7 @@ tr.stats {
 
 .question .wording {
 	margin-bottom: 10px;
+	overflow: auto;
 }
 
 .question .option {
@@ -62,6 +68,10 @@ table.in-question {
 }
 
 table.in-question th, table.in-question td {
-	padding: 3px;
+	padding: 7px;
 	border-bottom: 1px solid grey;
 }
+
+/*table { border: none; border-collapse: collapse; }*/
+table.in-question td { border-left: 1px solid grey; }
+table.in-question td:first-child { border-left: none; }

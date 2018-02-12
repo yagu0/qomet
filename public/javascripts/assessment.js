@@ -12,7 +12,7 @@ function checkWindowSize()
 	return window.innerWidth >= screen.width-3 && window.innerHeight >= screen.height-3;
 };
 
-let V = new Vue({
+new Vue({
 	el: "#assessment",
 	data: {
 		assessment: assessment,
