@@ -1,3 +1,14 @@
+.blur {
+	background-color: lightsalmon;
+}
+.resize {
+	font-style: italic;
+	color: darkred;
+}
+.disconnect {
+	background-color: grey;
+}
+
 /* TODO: factor this piece of code from assessment (and course, and here...) */
 .question {
 	margin: 20px 5px;
@@ -35,7 +46,12 @@ table.in-question {
 	width: auto;
 	margin: 10px auto;
 }
+
 table.in-question th, table.in-question td {
-	padding: 3px;
+	padding: 7px;
 	border-bottom: 1px solid grey;
 }
+
+/*table { border: none; border-collapse: collapse; }*/
+table.in-question td { border-left: 1px solid grey; }
+table.in-question td:first-child { border-left: none; }

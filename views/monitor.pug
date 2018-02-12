@@ -6,7 +6,7 @@ block append stylesheets
 block content
 	.container#monitor
 		.row
-			.col.s12.m10.offset-m1.l8.offset-l2.xl6.offset-xl3
+			.col.s12.m10.offset-m1
 				h4= examName
 				#stage0(v-show="stage==0")
 					.card
@@ -31,7 +31,7 @@ block content
 									th(v-for="(q,i) in assessment.questions") Q.{{ (i+1) }}
 							tbody
 								tr.assessment(v-for="s in studentList(group)")
-									td {{ s.name }}
+									td(:class="{blur:!!s.blur,resize:!!s.resize,disconnect:!!s.disco}") {{ s.name }}
 									td(v-for="(q,i) in assessment.questions" :style="{backgroundColor: getColor(s.number,i)}" @click="seeDetails(s.number,i)") &nbsp;
 					h4.title(@click="toggleDisplay('assessment')") Assessment
 					div(v-show="display=='assessment'")

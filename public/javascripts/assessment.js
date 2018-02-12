@@ -39,25 +39,53 @@ new Vue({
 	},
 	mounted: function() {
 		$(".modal").modal();
-		if (assessment.mode != "secure")
-			return;
-		window.addEventListener("keydown", e => {
-			// Ignore F12 (avoid accidental window resize due to devtools)
-			// NOTE: in Chromium at least, fullscreen mode exit with F11 cannot be prevented.
-			// Workaround: disable key at higher level. Possible xbindkey config:
-			// "false"
-			//   m:0x10 + c:95
-			//   Mod2 + F11
-			if (e.keyCode == 123)
-				e.preventDefault();
-		}, false);
+		if (assessment.mode != "open")
+		{
+			window.addEventListener("keydown", e => {
+				// Ignore F12 (avoid accidental window resize due to devtools)
+				// NOTE: in Chromium at least, fullscreen mode exit with F11 cannot be prevented.
+				// Workaround: disable key at higher level. Possible xbindkey config:
+				// "false"
+				//   m:0x10 + c:95
+				//   Mod2 + F11
+				if (e.keyCode == 123)
+					e.preventDefault();
+			}, false);
+		}
 		window.addEventListener("blur", () => {
-			this.trySendCurrentAnswer();
-			document.location.href= "/noblur";
+			if (!socket)
+				return;
+			if (assessment.mode == "secure")
+			{
+				this.trySendCurrentAnswer();
+				document.location.href= "/noblur";
+			}
+			else if (assessment.mode == "exam")
+				socket.emit(message.studentBlur, {number:this.student.number});
 		}, false);
+		if (assessment.mode == "exam")
+		{
+			window.addEventListener("focus", () => {
+				if (!socket)
+					return;
+				socket.emit(message.studentFocus, {number:this.student.number});
+			}, false);
+		}
 		window.addEventListener("resize", e => {
-			this.trySendCurrentAnswer();
-			document.location.href= "/fullscreen";
+			if (!socket)
+				return;
+			if (assessment.mode == "secure")
+			{
+				this.trySendCurrentAnswer();
+				document.location.href= "/fullscreen";
+			}
+			else if (assessment.mode == "exam")
+			{
+				if (checkWindowSize())
+					socket.emit(message.studentFullscreen, {number:this.student.number});
+				else
+					socket.emit(message.studentResize, {number:this.student.number});
+			}
 		}, false);
 	},
 	methods: {

@@ -86,6 +86,33 @@ new Vue({
 					socket = io.connect("/", {
 						query: "aid=" + this.assessment._id + "&secret=" + s.secret
 					});
+					socket.on(message.studentBlur, m => {
+						const sIdx = this.students.findIndex( item => { return item.number == m.number; });
+						Vue.set(this.students, sIdx, Object.assign({},this.students[sIdx],{blur: true}));
+						//this.students[sIdx].blur = true;
+					});
+					socket.on(message.studentFocus, m => {
+						const sIdx = this.students.findIndex( item => { return item.number == m.number; });
+						this.students[sIdx].blur = false;
+					});
+					socket.on(message.studentResize, m => {
+						const sIdx = this.students.findIndex( item => { return item.number == m.number; });
+						Vue.set(this.students, sIdx, Object.assign({},this.students[sIdx],{resize: true}));
+						//this.students[sIdx].resize = true;
+					});
+					socket.on(message.studentFullscreen, m => {
+						const sIdx = this.students.findIndex( item => { return item.number == m.number; });
+						this.students[sIdx].resize = false;
+					});
+					socket.on(message.studentDisconnect, m => {
+						const sIdx = this.students.findIndex( item => { return item.number == m.number; });
+						Vue.set(this.students, sIdx, Object.assign({},this.students[sIdx],{disco: true}));
+						//this.students[sIdx].disco = true;
+					});
+					socket.on(message.studentConnect, m => {
+						const sIdx = this.students.findIndex( item => { return item.number == m.number; });
+						this.students[sIdx].disco = false;
+					});
 					socket.on(message.newAnswer, m => {
 						let paperIdx = this.assessment.papers.findIndex( item => {
 							return item.number == m.number;
@@ -107,6 +134,7 @@ new Vue({
 		},
 		endMonitoring: function() {
 			// In the end, send answers to students
+			// TODO: disable this button until everyone finished (need ability to mark absents)
 			socket.emit(
 				message.allAnswers,
 				{ answers: JSON.stringify(this.assessment.questions.map( q => { return q.answer; })) }

@@ -30,6 +30,18 @@ module.exports = function(io)
 				socket.on(message.newAnswer, m => { //got answer from student client
 					socket.broadcast.to(aid + "_teacher").emit(message.newAnswer, m);
 				});
+				socket.on(message.studentBlur, m => {
+					socket.broadcast.to(aid + "_teacher").emit(message.studentBlur, m);
+				});
+				socket.on(message.studentFocus, m => {
+					socket.broadcast.to(aid + "_teacher").emit(message.studentFocus, m);
+				});
+				socket.on(message.studentResize, m => {
+					socket.broadcast.to(aid + "_teacher").emit(message.studentResize, m);
+				});
+				socket.on(message.studentFullscreen, m => {
+					socket.broadcast.to(aid + "_teacher").emit(message.studentFullscreen, m);
+				});
 				socket.on("disconnect", () => { //notify monitor + server
 					AssessmentEntity.setDiscoTime(ObjectId(aid), number);
 					socket.broadcast.to(aid + "_teacher").emit(message.studentDisconnect, {number: number});
