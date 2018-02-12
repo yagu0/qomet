@@ -186,11 +186,11 @@ block content
 
 block append javascripts
 	script(src="//cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.6/papaparse.min.js")
-	script(src="/javascripts/utils/sha1.js")
-	script(src="/javascripts/utils/validation.js")
 	script.
 		let assessmentArray = !{JSON.stringify(assessmentArray)};
 		const course = !{JSON.stringify(course)};
 		const initials = "#{initials}";
 		const admin = #{teacher};
+	script(src="/javascripts/utils/sha1.js")
+	script(src="/javascripts/utils/validation.js")
 	script(src="/javascripts/course.js")

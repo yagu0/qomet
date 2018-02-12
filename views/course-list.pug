@@ -40,9 +40,9 @@ block content
 								td(v-html="course.description")
 
 block javascripts
-	script(src="/javascripts/courseList.js")
-	script(src="/javascripts/utils/validation.js")
 	script.
 		let courseArray = !{JSON.stringify(courseArray)};
 		const initials = "#{initials}";
 		const admin = #{teacher};
+	script(src="/javascripts/utils/validation.js")
+	script(src="/javascripts/courseList.js")
