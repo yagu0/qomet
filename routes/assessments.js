@@ -2,7 +2,6 @@ let router = require("express").Router();
 const access = require("../utils/access");
 const UserModel = require("../models/user");
 const AssessmentModel = require("../models/assessment");
-const AssessmentEntity = require("../entities/assessment");
 const CourseModel = require("../models/course");
 const params = require("../config/parameters");
 const validator = require("../public/javascripts/utils/validation");
@@ -68,7 +67,7 @@ router.get("/start/assessment", access.ajax, (req,res) => {
 					maxAge: params.cookieExpire,
 				});
 			}
-			res.json(ret); //contains questions+password(or paper if resuming)
+			res.json(ret); //contains password (or paper if resuming)
 		});
 	});
 });
@@ -119,7 +118,7 @@ router.get("/end/assessment", access.ajax, (req,res) => {
 	if (error.length > 0)
 		return res.json({errmsg:error});
 	// Destroy pwd, set endTime
-	AssessmentEntity.endAssessment(ObjectId(aid), number, password, (err,ret) => {
+	AssessmentModel.endAssessment(ObjectId(aid), number, password, (err,ret) => {
 		access.checkRequest(res,err,ret,"Cannot end assessment", () => {
 			res.clearCookie('password');
 			res.json({});

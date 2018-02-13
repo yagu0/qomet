@@ -1,5 +1,5 @@
 const _ = require("underscore");
-const UserEntity = require("../entities/user");
+const UserModel = require("../models/user");
 
 let Access =
 {
@@ -7,7 +7,7 @@ let Access =
 	{
 		if (!res.locals.loggedIn)
 			return callback({errmsg: "Not logged in!"}, undefined);
-		UserEntity.getBySessionToken(req.cookies.token, function(err, user) {
+		UserModel.getBySessionToken(req.cookies.token, function(err, user) {
 			if (!user)
 				return callback({errmsg: "Not logged in!"}, undefined);
 			return callback(null, user);

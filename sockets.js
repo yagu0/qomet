@@ -1,6 +1,5 @@
 const message = require("./public/javascripts/utils/socketMessages");
 const params = require("./config/parameters");
-const AssessmentEntity = require("./entities/assessment");
 const AssessmentModel = require("./models/assessment");
 const ObjectId = require("bson-objectid");
 
@@ -43,7 +42,7 @@ module.exports = function(io)
 					socket.broadcast.to(aid + "_teacher").emit(message.studentFullscreen, m);
 				});
 				socket.on("disconnect", () => { //notify monitor + server
-					AssessmentEntity.setDiscoTime(ObjectId(aid), number);
+					AssessmentModel.setDiscoTime(ObjectId(aid), number);
 					socket.broadcast.to(aid + "_teacher").emit(message.studentDisconnect, {number: number});
 				});
 			});

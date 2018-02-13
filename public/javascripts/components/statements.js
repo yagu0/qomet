@@ -1,3 +1,21 @@
+/*
+ * questions group by index prefix 1.2.3 1.1 ...etc --> '1'
+
+NOTE: questions can contain parameterized exercises (how ?
+--> describe variables (syntax ?)
+--> write javascript script (OK, users trusted ? ==> safe mode possible if public website)
+Imaginary example: (using math.js)
+	<params> (avant l'exo)
+	x: math.random()
+	y: math.random()
+	M: math.matrix([[7, x], [y, -3]]);
+	res: math.det(M)
+	</params>
+	<div>Calculer le déterminant de 
+	$$\begin{matrix}7 & x\\y & -3\end{matrix}$$</div>
+	* ...
+*/
+
 Vue.component("statements", {
 	// 'answers' is an object containing
 	//   'inputs'(array),

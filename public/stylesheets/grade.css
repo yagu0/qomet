@@ -1,0 +1,11 @@
+table.result {
+	cursor: pointer;
+}
+
+tr.stats {
+	padding-top: 10px;
+}
+
+#questionList {
+	margin: 20px 5px;
+}

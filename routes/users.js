@@ -1,7 +1,6 @@
 let router = require("express").Router();
 const validator = require('../public/javascripts/utils/validation');
 const UserModel = require('../models/user');
-const UserEntity = require('../entities/user');
 const maild = require('../utils/mailer');
 const TokenGen = require("../utils/tokenGenerator");
 const access = require("../utils/access");
@@ -12,7 +11,7 @@ function sendLoginToken(subject, to, res)
 {
 	// Set login token and send welcome(back) email with auth link
 	let token = TokenGen.generate(params.token.length);
-	UserEntity.setLoginToken(token, to._id, to.ip, (err,ret) => {
+	UserModel.setLoginToken(token, to._id, to.ip, (err,ret) => {
 		access.checkRequest(res, err, ret, "Cannot set login token", () => {
 			maild.send({
 				from: params.mail.from,
@@ -41,7 +40,7 @@ router.get('/register', access.ajax, access.unlogged, (req,res) => {
 		return res.json({errmsg:error});
 	if (!UserModel.whitelistCheck(newUser.email))
 		return res.json({errmsg: "Email not in whitelist"});
-	UserEntity.getByEmail(newUser.email, (err,user0) => {
+	UserModel.getByEmail(newUser.email, (err,user0) => {
 		access.checkRequest(res, err, !user0?["ok"]:{}, "An account exists with this email", () => {
 			UserModel.create(newUser, (err,user) => {
 				access.checkRequest(res, err, user, "Registration failed", () => {
@@ -59,7 +58,7 @@ router.get('/sendtoken', access.ajax, access.unlogged, (req,res) => {
 	let error = validator({email:email}, "User");
 	if (error.length > 0)
 		return res.json({errmsg:error});
-	UserEntity.getByEmail(email, (err,user) => {
+	UserModel.getByEmail(email, (err,user) => {
 		access.checkRequest(res, err, user, "Unknown user", () => {
 			user.ip = req.ip;
 			sendLoginToken("Token for " + params.siteURL, user, res);
@@ -73,7 +72,7 @@ router.get('/authenticate', access.unlogged, (req,res) => {
 	let error = validator({token:loginToken}, "User");
 	if (error.length > 0)
 		return res.json({errmsg:error});
-	UserEntity.getByLoginToken(loginToken, (err,user) => {
+	UserModel.getByLoginToken(loginToken, (err,user) => {
 		access.checkRequest(res, err, user, "Invalid token", () => {
 			if (user.loginToken.ip != req.ip)
 				return res.json({errmsg: "IP address mismatch"});
@@ -84,7 +83,7 @@ router.get('/authenticate', access.unlogged, (req,res) => {
 				return res.json({errmsg: "Token expired"});
 			// Generate and update session token + destroy login token
 			let token = TokenGen.generate(params.token.length);
-			UserEntity.setSessionToken(token, user._id, (err,ret) => {
+			UserModel.setSessionToken(token, user._id, (err,ret) => {
 				access.checkRequest(res, err, ret, "Authentication failed", () => {
 					// Set cookies and redirect to user main control panel
 					res.cookie("token", token, {
@@ -103,7 +102,7 @@ router.get('/authenticate', access.unlogged, (req,res) => {
 });
 
 router.get('/logout', access.logged, (req,res) => {
-	UserModel.logout(req.user._id, req.cookies.token, (err,ret) => {
+	UserModel.removeToken(req.user._id, req.cookies.token, (err,ret) => {
 		access.checkRequest(res, err, ret, "Logout failed", () => {
 			res.clearCookie("initials");
 			res.clearCookie("token");

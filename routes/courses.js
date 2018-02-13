@@ -3,7 +3,6 @@ const access = require("../utils/access.js");
 const validator = require("../public/javascripts/utils/validation");
 const sanitizeHtml = require('sanitize-html');
 const ObjectId = require("bson-objectid");
-const CourseEntity = require("../entities/course");
 const CourseModel = require("../models/course");
 
 router.get('/add/course', access.ajax, access.logged, (req,res) => {
@@ -12,7 +11,7 @@ router.get('/add/course', access.ajax, access.logged, (req,res) => {
 	let error = validator({code:code}, "Course");
 	if (error.length > 0)
 		return res.json({errmsg:error});
-	CourseEntity.insert(req.user._id, code, description, (err,course) => {
+	CourseModel.insert(req.user._id, code, description, (err,course) => {
 		access.checkRequest(res, err, course, "Course addition failed", () => {
 			res.json(course);
 		});
@@ -55,7 +54,7 @@ router.get('/get/student', access.ajax, (req,res) => {
 	let error = validator({ _id: cid, students: [{number:number}] }, "Course");
 	if (error.length > 0)
 		return res.json({errmsg:error});
-	CourseEntity.getStudent(ObjectId(cid), number, (err,ret) => {
+	CourseModel.getStudent(ObjectId(cid), number, (err,ret) => {
 		access.checkRequest(res, err, ret, "Failed retrieving student", () => {
 			res.json({student: ret.students[0]});
 		});
@@ -73,7 +72,5 @@ router.get('/remove/course', access.ajax, access.logged, (req,res) => {
 		});
 	});
 });
-
-// TODO: grading page (for at least partially open-questions exams)
 
 module.exports = router;

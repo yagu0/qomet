@@ -1,6 +1,7 @@
 extends withQuestions
 
 block append stylesheets
+	link(rel="stylesheet" href="/stylesheets/statements.css")
 	link(rel="stylesheet" href="/stylesheets/course.css")
 
 block content
@@ -17,6 +18,15 @@ block content
 						a.waves-effect.waves-light.btn(href="#!" @click="addAssessment()")
 							span Submit
 							i.material-icons.right send
+		.row(v-show="mode=='view'")
+			
+			
+			
+			
+			
+			
+			
+			
 			#assessmentSettings.modal
 				.modal-content
 					form
@@ -26,6 +36,9 @@ block content
 						p
 							input#secure(name="status" type="radio" value="secure" v-model="assessment.mode")
 							label(for="secure") Exam mode, secured (class only)
+						p
+							input#watch(name="status" type="radio" value="watch" v-model="assessment.mode")
+							label(for="watch") Exam mode, watched (class only)
 						p
 							input#exam(name="status" type="radio" value="exam" v-model="assessment.mode")
 							label(for="exam") Exam mode, free (class only)
@@ -59,39 +72,13 @@ block content
 				.modal-footer
 					.center-align
 						a.modal-action.modal-close.waves-effect.waves-light.btn-flat(href="#!") Done
-			#gradeSettings.modal
-				.modal-content
-					form(@submit.prevent="computeGrades")
-						.input-field
-							input#points(type="number" v-model.number="settings.totalPoints" required)
-							label(for="points") Total points
-						p
-							input#partial(type="checkbox" v-model="settings.halfPoint")
-							label(for="partial") Half point for partial answers? (&ge; 50%)
-						p
-							input#malus(type="checkbox" v-model="settings.zeroSum")
-							label(for="malus") Lose points on wrong answers? ("Zero-sum" game)
-				.modal-footer
-					.center-align
-						a.modal-action.modal-close.waves-effect.waves-light.btn(href="#!" @click="computeGrades()")
-							span Compute
-							i.material-icons.right send
-			#detailedGrades.modal
-				.modal-content
-					table
-						thead
-							tr
-								th Number
-								th(v-for="assessment in assessmentArray") {{ assessment.name }}
-						tbody
-							tr.grade(v-for="student in studentList(group)")
-								td {{ student.number }}
-								td(v-for="(assessment,i) in assessmentArray" @click="togglePresence(student.number,i)")
-									| {{ grade(i,student.number) }}
-				.modal-footer
-					.center-align
-						a.modal-action.modal-close.waves-effect.waves-light.btn-flat(href="#!") Close
-		.row(v-show="mode=='view'")
+			
+			
+			
+			
+			
+			
+			
 			.col.s12.m10.offset-m1
 				if teacher
 					h4.title(@click="toggleDisplay('students')") Students
@@ -131,32 +118,6 @@ block content
 								td {{ assessment.mode }}
 								td {{ assessment.questions.reduce( (a,b) => { return b.active ? a+1 : a; }, 0) }}
 								td {{ assessment.time }}
-				if teacher
-					h4.title(@click="toggleDisplay('grades')") Grades
-					.card(v-show="display=='grades'")
-						.center-align
-							button.on-left.waves-effect.waves-light.btn(@click="gradeSettings()") Settings
-							a#download.hide(href="#" ref="download")
-							button.waves-effect.waves-light.btn(@click="download") Download
-						ul.tabs.tabs-fixed-width
-							li.tab
-								a(href="#group0") All
-							li.tab(v-for="group in groupList()")
-								a(:href="groupId(group,'#')") G.{{ group }}
-						table.result(:id="groupId(group)" v-for="group in [0].concat(groupList())" @click="showDetails(group)")
-							thead
-								tr
-									th Number
-									th Name
-									th Final
-							tbody
-								tr.grade(v-for="student in studentList(group)")
-									td {{ student.number }}
-									td {{ student.name }}
-									td grade...
-									//td {{ grades[student.number].final }}
-								tr.stats
-									td(colspan="4") Stats: range= stdev= mean=
 		if teacher
 			.row(v-show="mode=='edit'")
 				.col.s12.m10.offset-m1
@@ -172,10 +133,12 @@ block content
 								.wording(v-html="question.wording")
 								.option(v-for="(option,j) in question.options" :class="{choiceCorrect:question.answer.includes(j)}" v-html="option")
 								p
-									input(:id="checkBoxFixedId(i)" type="checkbox" v-model="question.fixed")
-									label.on-left(:for="checkBoxFixedId(i)") Fixed
-									input(:id="checkBoxActiveId(i)" type="checkbox" v-model="question.active")
-									label(:for="checkBoxActiveId(i)") Active
+									input(:id="checkboxFixedId(i)" type="checkbox" v-model="question.fixed")
+									label.on-left(:for="checkboxFixedId(i)") Fixed
+									input(:id="checkboxActiveId(i)" type="checkbox" v-model="question.active")
+									label(:for="checkboxActiveId(i)") Active
+									input(time default 0 = untimed)
+									label Time for the question
 						.center-align
 							button.waves-effect.waves-light.btn.on-left(@click="mode='view'") Cancel
 							button.waves-effect.waves-light.btn(@click="updateAssessment") Send

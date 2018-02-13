@@ -1,15 +1,14 @@
 let router = require("express").Router();
 const access = require("../utils/access");
-const UserEntity = require("../entities/user");
-const AssessmentEntity = require("../entities/assessment");
-const CourseModel = require("../models/course");
+const UserModel = require("../models/user");
 const AssessmentModel = require("../models/assessment");
+const CourseModel = require("../models/course");
 
 // Actual pages (least specific last)
 
 // List initials and count assessments
 router.get("/", (req,res) => {
-	UserEntity.getAll( (err,userArray) => {
+	UserModel.getAll( (err,userArray) => {
 		if (!!err)
 			return res.json(err);
 		res.render("index", {
@@ -76,7 +75,7 @@ router.get("/:initials([a-z0-9]+)/:courseCode([a-z0-9._-]+)", (req,res) => {
 	let code = req.params["courseCode"];
 	CourseModel.getByRefs(initials, code, (err,course) => {
 		access.checkRequest(res, err, course, "Course not found", () => {
-			AssessmentEntity.getByCourse(course._id, (err2,assessmentArray) => {
+			AssessmentModel.getByCourse(course._id, (err2,assessmentArray) => {
 				if (!!err)
 					return res.json(err);
 				access.getUser(req, res, (err2,user) => {
@@ -94,6 +93,18 @@ router.get("/:initials([a-z0-9]+)/:courseCode([a-z0-9._-]+)", (req,res) => {
 				});
 			});
 		});
+	});
+});
+
+// Grading students answers: --> after identification (password), always send secret with requests
+router.get("/:initials([a-z0-9]+)/:courseCode([a-z0-9._-]+)/grade", (req,res) => {
+	let initials = req.params["initials"];
+	let code = req.params["courseCode"];
+	// TODO: if (main) teacher, also send secret, saving one request
+	res.render("grade", {
+		title: "grade exams " + code + "/" + name,
+		initials: initials,
+		courseCode: code,
 	});
 });
 

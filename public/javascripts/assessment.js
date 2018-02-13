@@ -133,6 +133,9 @@ new Vue({
 				$("#leftButton, #rightButton").hide();
 				if (assessment.time > 0)
 				{
+
+// TODO: distinguish total exam time AND question time
+
 					const deltaTime = !!paper ? Date.now() - paper.startTime : 0;
 					this.remainingTime = assessment.time * 60 - Math.round(deltaTime / 1000);
 					this.runTimer();
