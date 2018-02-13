@@ -52,3 +52,8 @@ table.in-question th, table.in-question td {
 /*table { border: none; border-collapse: collapse; }*/
 table.in-question td { border-left: 1px solid grey; }
 table.in-question td:first-child { border-left: none; }
+
+.absent {
+	opacity: 0.5;
+	background-color: lightgrey;
+}

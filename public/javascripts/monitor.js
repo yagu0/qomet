@@ -42,15 +42,17 @@ new Vue({
 		groupId: function(group, prefix) {
 			return (prefix || "") + "group" + group;
 		},
-		togglePresence: function(s) {
-			s.present = !s.present;
+		togglePresence: function(student) {
+			const sIdx = this.students.findIndex( s => { return s.number == student.number; });
+			Vue.set( this.students, sIdx, Object.assign({},student,{present:!student.present}) );
+			//s.present = !s.present;
 		},
 		allFinished: function() {
 			for (s of this.students)
 			{
 				if (!s.present)
 					continue;
-				const paperIdx = this.assessment.papers.findIndex( item => { return item.number == number; });
+				const paperIdx = this.assessment.papers.findIndex( item => { return item.number == s.number; });
 				if (paperIdx === -1)
 					return false;
 				const paper = this.assessment.papers[paperIdx];
