@@ -17,26 +17,37 @@ Imaginary example: (using math.js)
 */
 
 Vue.component("statements", {
-	// 'answers' is an object containing
-	//   'inputs'(array),
-	//   'displayAll'(bool), //TODO: should be in questions!
-	//   'showSolution'(bool),
-	//   'indices': order of appearance
-	//   'index': current integer index (focused question)
-	props: ['questions','answers'],
-	// TODO: general render function for nested exercises
-	// There should be a questions navigator below, or next (visible if display=='all')
+	// 'inputs': array of index (as in questions) + input (text or array of ints)
+	// display: 'all', 'one', 'solution'
+	// iidx: current level-0 integer index (can match a group of questions / inputs)
+	props: ['questions','inputs','display','iidx'],
+	data: function() {
+		return {
+			displayStyle: "compact", //or "all": all on same page
+		};
+	}
 	// Full questions tree is rendered, but some parts hidden depending on display settings
 	render(h) {
-		// TODO: render nothing if answers is empty
 		let domTree = (this.questions || [ ]).map( (q,i) => {
 			let questionContent = [ ];
+			questionContent.push(
+				h(
+					"h4",
+					{
+						"class": {
+							"questionIndex": true,
+						}
+					},
+					q.index
+				)
+			);
 			questionContent.push(
 				h(
 					"div",
 					{
 						"class": {
 							wording: true,
+
 						},
 						domProps: {
 							innerHTML: q.wording,
@@ -44,82 +55,141 @@ Vue.component("statements", {
 					}
 				)
 			);
-			let optionsOrder = _.range(q.options.length);
-			if (!q.fixed)
-				optionsOrder = _.shuffle(optionsOrder);
-			let optionList = [ ];
-			optionsOrder.forEach( idx => {
-				let option = [ ];
-				option.push(
-					h(
-						"input",
-						{
-							domProps: {
-								checked: this.answers.inputs.length > 0 && this.answers.inputs[i][idx],
-								disabled: monitoring,
+			if (!!q.options)
+			{
+				// quiz-like question
+				let optionsOrder = _.range(q.options.length);
+				if (!q.fixed)
+					optionsOrder = _.shuffle(optionsOrder);
+				let optionList = [ ];
+				optionsOrder.forEach( idx => {
+					let option = [ ];
+					option.push(
+						h(
+							"input",
+							{
+								domProps: {
+									checked: this.answers.inputs.length > 0 && this.answers.inputs[i][idx],
+									disabled: monitoring,
+								},
+								attrs: {
+									id: this.inputId(i,idx),
+									type: "checkbox",
+								},
+								on: {
+									change: e => { this.answers.inputs[i][idx] = e.target.checked; },
+								},
 							},
-							attrs: {
-								id: this.inputId(i,idx),
-								type: "checkbox",
+							[ '' ] //to work in Firefox 45.9 ESR @ ENSTA...
+						)
+					);
+					option.push(
+						h(
+							"label",
+							{
+								domProps: {
+									innerHTML: q.options[idx],
+								},
+								attrs: {
+									"for": this.inputId(i,idx),
+								},
+							}
+						)
+					);
+					optionList.push(
+						h(
+							"div",
+							{
+								"class": {
+									option: true,
+									choiceCorrect: this.answers.showSolution && this.questions[i].answer.includes(idx),
+									choiceWrong: this.answers.showSolution && this.answers.inputs[i][idx] && !q.answer.includes(idx),
+								},
 							},
-							on: {
-								change: e => { this.answers.inputs[i][idx] = e.target.checked; },
-							},
-						},
-						[ '' ] //to work in Firefox 45.9 ESR @ ENSTA...
-					)
-				);
-				option.push(
-					h(
-						"label",
-						{
-							domProps: {
-								innerHTML: q.options[idx],
-							},
-							attrs: {
-								"for": this.inputId(i,idx),
-							},
-						}
-					)
-				);
-				optionList.push(
+							option
+						)
+					);
+				});
+				questionContent.push(
 					h(
 						"div",
 						{
 							"class": {
-								option: true,
-								choiceCorrect: this.answers.showSolution && this.questions[i].answer.includes(idx),
-								choiceWrong: this.answers.showSolution && this.answers.inputs[i][idx] && !q.answer.includes(idx),
+								optionList: true,
 							},
 						},
-						option
+						optionList
 					)
 				);
-			});
-			questionContent.push(
-				h(
-					"div",
-					{
-						"class": {
-							optionList: true,
-						},
-					},
-					optionList
-				)
-			);
-			if (this.answers.displayAll && i < this.questions.length-1)
+			}
+			if (this.display == "all" && !this.navigator && i < this.questions.length-1)
 				questionContent.push( h("hr") );
+			const depth = (q.index.match(/\./g) || []).length;
 			return h(
 				"div",
 				{
 					"class": {
 						"question": true,
-						"hide": !this.answers.displayAll && this.answers.indices[this.answers.index] != i,
+						"hide": this.display == "one" && this.iidx != i,
+						"depth" + depth: true,
 					},
 				},
 				questionContent
 			);
 		});
+		const navigator = h(
+			"div",
+			{
+				"class": {
+					"hide": this.displayStyle == "all"
+				},
+			},
+			[
+				h(
+					"button",
+					{
+						"class": {
+							"btn": true,
+						},
+						on: {
+							click: () => {
+								this.index = Math.max(0, this.index - 1);
+							},
+						},
+					},
+					[ h("span", { "class": { "material-icon": true } }, "fast_rewind") ]
+				), //onclick: index = max(0,index-1)
+				h("span",{ },(this.iidx+1).toString()),
+				h(
+					"button",
+					{
+						"class": {
+							"btn": true,
+						},
+						on: {
+							click: () => {
+								this.index = Math.min(this.index+1, this.questions.length-1)
+							},
+						},
+					},
+					[ h("span", { "class": { "material-icon": true } }, "fast_forward") ]
+				)
+			]
+		);
+		domTree.push(navigator);
+		domTree.push(
+			h(
+				"button",
+				{
+					on: {
+						click: () => {
+							this.displayStyle = displayStyle == "compact" ? "all" : "compact";
+						},
+					},
+				},
+				this.displayStyle == "compact" ? "Show all" : "Navigator"
+			)
+		);
 		return h(
 			"div",
 			{
@@ -134,8 +204,6 @@ Vue.component("statements", {
 		statementsLibsRefresh();
 	},
 	updated: function() {
-		// TODO: next line shouldn't be required: questions wordings + answer + options
-		// are processed earlier; their content should be updated at this time.
 		statementsLibsRefresh();
 	},
 	methods: {

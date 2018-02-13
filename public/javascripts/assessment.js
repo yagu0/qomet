@@ -23,18 +23,18 @@ new Vue({
 		//       2: locked: password set, exam started
 		//       3: completed
 		//       4: show answers
+		remainingTime: assessment.time, //integer or array
 		stage: assessment.mode != "open" ? 0 : 1,
-		remainingTime: 0, //global, in seconds
 		warnMsg: "",
 	},
 	computed: {
 		countdown: function() {
-			let seconds = this.remainingTime % 60;
-			let minutes = Math.floor(this.remainingTime / 60);
+			const remainingTime = assessment.display == "one" && _.isArray(assessment.time)
+				? this.remainingTime[this.answers.index]
+				: this.remainingTime;
+			let seconds = remainingTime % 60;
+			let minutes = Math.floor(remainingTime / 60);
 			return this.padWithZero(minutes) + ":" + this.padWithZero(seconds);
-		},
-		showAnswers: function() {
-			return this.stage == 4;
 		},
 	},
 	mounted: function() {
@@ -46,7 +46,7 @@ new Vue({
 				return;
 			if (assessment.mode == "secure")
 			{
-				this.trySendCurrentAnswer();
+				this.sendAnswer();
 				document.location.href= "/noblur";
 			}
 			else //"watch" mode
@@ -65,7 +65,7 @@ new Vue({
 				return;
 			if (assessment.mode == "secure")
 			{
-				this.trySendCurrentAnswer();
+				this.sendAnswer();
 				document.location.href = "/fullscreen";
 			}
 			else //"watch" mode
@@ -78,7 +78,7 @@ new Vue({
 		}, false);
 	},
 	methods: {
-		// In case of AJAX errors
+		// In case of AJAX errors (not blur-ing)
 		showWarning: function(message) {
 			this.warnMsg = message;
 			$("#warning").modal("open");
@@ -88,12 +88,8 @@ new Vue({
 				return "0" + x;
 			return x;
 		},
-		trySendCurrentAnswer: function() {
-			if (this.stage == 2)
-				this.sendAnswer();
-		},
 		// stage 0 --> 1
-		getStudent: function(cb) {
+		getStudent: function() {
 			$.ajax("/get/student", {
 				method: "GET",
 				data: {
@@ -107,8 +103,6 @@ new Vue({
 					this.stage = 1;
 					this.student = s.student;
 					Vue.nextTick( () => { Materialize.updateTextFields(); });
-					if (!!cb)
-						cb();
 				},
 			});
 		},
@@ -118,18 +112,14 @@ new Vue({
 		},
 		// stage 1 --> 2 (get all questions, set password)
 		startAssessment: function() {
-			let initializeStage2 = (questions,paper) => {
+			let initializeStage2 = paper => {
 				$("#leftButton, #rightButton").hide();
-				if (assessment.time > 0)
-				{
-
-// TODO: distinguish total exam time AND question time
-
-					const deltaTime = !!paper ? Date.now() - paper.startTime : 0;
-					this.remainingTime = assessment.time * 60 - Math.round(deltaTime / 1000);
-					this.runTimer();
-				}
 				// Initialize structured answer(s) based on questions type and nesting (TODO: more general)
+				
+				// if display == "all" getQuestionS
+				// otherwise get first question
+				
+				
 				if (!!questions)
 					assessment.questions = questions;
 				this.answers.inputs = [ ];
@@ -148,6 +138,24 @@ new Vue({
 					let remainingIndices = _.difference( _.range(assessment.questions.length).map(String), indices );
 					this.answers.indices = indices.concat( _.shuffle(remainingIndices) );
 				}
+
+
+
+
+
+
+
+				if (assessment.time > 0)
+				{
+
+// TODO: distinguish total exam time AND question time
+
+					const deltaTime = !!paper ? Date.now() - paper.startTime : 0;
+					this.remainingTime = assessment.time * 60 - Math.round(deltaTime / 1000);
+					this.runTimer();
+				}
+
+
 				this.answers.index = !!paper ? paper.inputs.length : 0;
 				this.answers.displayAll = assessment.display == "all";
 				this.answers.showSolution = false;

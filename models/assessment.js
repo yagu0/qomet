@@ -11,11 +11,11 @@ const AssessmentModel =
 	 *   _id: BSON id
 	 *   cid: course ID
 	 *   name: varchar
-	 *   active: boolean true/false
-	 *   mode: secure | exam | open (decreasing security)
+	 *   active: boolean
+	 *   mode: secure | watch | exam | open (decreasing security)
 	 *   fixed: bool (questions in fixed order; default: false)
 	 *   display: "one" or "all" (generally "all" for open questions, but...)
-	 *   time: 0, //<=0 means "untimed"; otherwise, time in seconds
+	 *   time: 0, global (one vaue) or per question (array of integers)
 	 *   introduction: "",
 	 *   coefficient: number, default 1
 	 *   questions: array of
@@ -26,7 +26,6 @@ const AssessmentModel =
 	 *     answer: array of integers (for quiz) or html text (for paper); striped in exam mode
 	 *     active: boolean, is question in current assessment?
 	 *     points: points for this question (default 1)
-	 *     time: 0 (<=0: untimed)
 	 *   papers : array of
 	 *     number: student number
 	 *     inputs: array of {index,answer[array of integers or html text],startTime}
