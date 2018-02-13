@@ -42,6 +42,23 @@ new Vue({
 		groupId: function(group, prefix) {
 			return (prefix || "") + "group" + group;
 		},
+		togglePresence: function(s) {
+			s.present = !s.present;
+		},
+		allFinished: function() {
+			for (s of this.students)
+			{
+				if (!s.present)
+					continue;
+				const paperIdx = this.assessment.papers.findIndex( item => { return item.number == number; });
+				if (paperIdx === -1)
+					return false;
+				const paper = this.assessment.papers[paperIdx];
+				if (paper.inputs.length < this.assessment.questions.length)
+					return false;
+			}
+			return true;
+		},
 		getColor: function(number, qIdx) {
 			// For the moment, green if correct and red if wrong; grey if unanswered yet
 			// TODO: in-between color for partially right (especially for multi-questions)
@@ -82,6 +99,7 @@ new Vue({
 						return input;
 					});
 					this.students = s.students;
+					this.students.forEach( s => { s.present = true; }); //a priori...
 					this.stage = 1;
 					socket = io.connect("/", {
 						query: "aid=" + this.assessment._id + "&secret=" + s.secret
