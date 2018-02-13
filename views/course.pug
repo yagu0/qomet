@@ -56,9 +56,6 @@ block content
 						.input-field
 							textarea#assessmentEdition.materialize-textarea(v-model="assessmentText")
 							label(for="assessmentEdition") Assessment in text format
-						.input-field
-							textarea#conclusion.materialize-textarea(v-model="assessment.conclusion")
-							label(for="conclusion") Conclusion
 				.modal-footer
 					.center-align
 						a.modal-action.modal-close.waves-effect.waves-light.btn-flat(href="#!") Done
@@ -179,7 +176,6 @@ block content
 									label.on-left(:for="checkBoxFixedId(i)") Fixed
 									input(:id="checkBoxActiveId(i)" type="checkbox" v-model="question.active")
 									label(:for="checkBoxActiveId(i)") Active
-							.conclusion(v-html="assessment.conclusion")
 						.center-align
 							button.waves-effect.waves-light.btn.on-left(@click="mode='view'") Cancel
 							button.waves-effect.waves-light.btn(@click="updateAssessment") Send

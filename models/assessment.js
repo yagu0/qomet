@@ -132,9 +132,6 @@ const AssessmentModel =
 		AssessmentEntity.endAssessment(aid, number, password, (err,ret) => {
 			if (!!err || !ret)
 				return cb(err,ret);
-			AssessmentEntity.getConclusion(aid, (err2,conclusion) => {
-				cb(err2, {conclusion:conclusion});
-			});
 		});
 	},
 };

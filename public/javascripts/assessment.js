@@ -274,7 +274,6 @@ new Vue({
 				success: ret => {
 					if (!!ret.errmsg)
 						return this.showWarning(ret.errmsg);
-					assessment.conclusion = ret.conclusion;
 					this.stage = 3;
 					delete this.student["password"]; //unable to send new answers now
 				},

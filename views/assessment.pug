@@ -51,9 +51,6 @@ block content
 				#stage3(v-show="stage==3")
 					.card
 						.finish Exam completed &#9786; ...don't close the window!
-				#stage3_4(v-show="[3,4].includes(stage)")
-					.card
-						.conclusion(v-html="assessment.conclusion")
 
 block append javascripts
 	script.

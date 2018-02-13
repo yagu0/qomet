@@ -37,7 +37,6 @@ router.post("/update/assessment", access.ajax, access.logged, (req,res) => {
 	if (error.length > 0)
 		return res.json({errmsg:error});
 	assessment.introduction = sanitizeHtml(assessment.introduction, sanitizeOpts);
-	assessment.conclusion = sanitizeHtml(assessment.conclusion, sanitizeOpts);
 	assessment.questions.forEach( q => {
 		q.wording = sanitizeHtml(q.wording, sanitizeOpts);
 		//q.answer = sanitizeHtml(q.answer); //if text (TODO: it's an array in this case?!)
@@ -119,11 +118,11 @@ router.get("/end/assessment", access.ajax, (req,res) => {
 	let error = validator({ _id:aid, papers:[{number:number,password:password}] }, "Assessment");
 	if (error.length > 0)
 		return res.json({errmsg:error});
-	// Destroy pwd, set endTime, return conclusion
-	AssessmentModel.endSession(ObjectId(aid), number, password, (err,conclusion) => {
-		access.checkRequest(res,err,conclusion,"Cannot end assessment", () => {
+	// Destroy pwd, set endTime
+	AssessmentModel.endSession(ObjectId(aid), number, password, (err,ret) => {
+		access.checkRequest(res,err,ret,"Cannot end assessment", () => {
 			res.clearCookie('password');
-			res.json(conclusion);
+			res.json({});
 		});
 	});
 });

@@ -114,8 +114,7 @@ router.get("/:initials([a-z0-9]+)/:courseCode([a-z0-9._-]+)/:assessmentName([a-z
 					// Basic headless browser detection
 					return res.json({errmsg: "Headless browser detected"});
 				}
-				// Strip conclusion + questions if exam mode (stepwise process)
-				delete assessment["conclusion"];
+				// Strip questions if exam mode (stepwise process)
 				delete assessment["questions"];
 			}
 			res.render("assessment", {

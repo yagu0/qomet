@@ -39,8 +39,6 @@ block content
 							.introduction(v-html="assessment.introduction")
 						.card
 							statements(:questions="assessment.questions" :answers="answers")
-						.card
-							.conclusion(v-html="assessment.conclusion")
 
 block append javascripts
 	script.

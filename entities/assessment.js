@@ -13,7 +13,6 @@ const AssessmentEntity =
 	 *   display: "one" or "all" (generally "all" for open questions, but...)
 	 *   time: 0, //<=0 means "untimed"; otherwise, time in seconds
 	 *   introduction: "",
-	 *   conclusion: "https://www.youtube.com/watch?v=6-9AjToJYuw",
 	 *   coefficient: number, default 1
 	 *   questions: array of
 	 *     index: for paper test, like 2.1.a (?!); and quiz: 0, 1, 2, 3...
@@ -21,7 +20,7 @@ const AssessmentEntity =
 	 *     options: array of varchar --> if present, question type == quiz!
 	 *     fixed: bool, options in fixed order (default: false)
 	 *     answer: array of integers (for quiz) or html text (for paper); striped in exam mode
-	 *     active: boolean, is question in current assessment? --> striped if inactive!
+	 *     active: boolean, is question in current assessment?
 	 *     points: points for this question (default 1)
 	 *   papers : array of
 	 *     number: student number
@@ -63,7 +62,6 @@ const AssessmentEntity =
 				display: "one",
 				time: 0,
 				introduction: "",
-				conclusion: "",
 				coefficient: 1,
 				questions: [ ],
 				papers: [ ],
@@ -236,17 +234,6 @@ const AssessmentEntity =
 				"papers.$.password": "",
 			} },
 			callback
-		);
-	},
-
-	getConclusion: function(aid, callback)
-	{
-		db.assessments.findOne(
-			{ _id: aid },
-			{ conclusion: 1},
-			(err,res) => {
-				callback(err, !!res ? res.conclusion : null);
-			}
 		);
 	},
 

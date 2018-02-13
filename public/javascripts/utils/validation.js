@@ -42,7 +42,6 @@ Validator.Assessment = {
 	"display": "alphanumeric", //"one" or "all"
 	"time": "integer",
 	"introduction": "string",
-	"conclusion": "string",
 	"coefficient": "number",
 	"questions": Validator.Question,
 	"papers": Validator.Paper,
