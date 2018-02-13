@@ -6,42 +6,49 @@ compute grades after exam (in teacher's view)
 factorize redundant code in course.js, monitor.js and (TOWRITE) grade.js
   (showing students list + grades or papers)
 monitoring: main teacher should not be asked for pwd, and button "send feedback" hidden for others
+(or just disabled)
 
 -----
 
-TODO: format général TXT: (compilé en JSON)
+Draft format (compiled to json)
 
-10 (time)
-1 (fixed)
-Introduction (multiline, from third line ; \n --> <br>)
+> Some global (HTML) intro
 
-[Intro q1, multiline]
+<some html question (or/+ exercise intro)>
 
-q1 txt
+	<some html subQuestion>
+	* some answer [trigger input/index in answers]
 
-answer q1 (multiline txt)
+	<another subquestion>
 
-q2 intro (multiline)
+		<sub-subQuestion>
+		+ choix1
+		- choix 2
+		+ choix 3
+		- choix4
 
-  q2.1 [intro optional]
+		<another sub sub>
+		* answer 2 (which can
+		be on
+		several lines)
 
-	q2.1 txt
-
-	q2.1 options:
-	+ good
-	- bad
-	- bad ...etc
-
-	answer (integer array, one line)
-
-  q2.2 [intro optional]
-
-	q2.2 txt
-
-	answer (html multiline)
-
-Conclusion (last block)
+<Some second question>
+* With answer
 
 =====
 
-Seems that GUI would be easier, then summary in YAML file + parse from YAML
+questions group by index prefix 1.2.3 1.1 ...etc --> '1'
+
+NOTE: questions can contain parameterized exercises (how ?
+--> describe variables (syntax ?)
+--> write javascript script (OK, users trusted ? ==> safe mode possible if public website)
+Imaginary example: (using math.js)
+	<params> (avant l'exo)
+	x: math.random()
+	y: math.random()
+	M: math.matrix([[7, x], [y, -3]]);
+	res: math.det(M)
+	</params>
+	<div>Calculer le déterminant de 
+	$$\begin{matrix}7 & x\\y & -3\end{matrix}$$</div>
+	* ...
