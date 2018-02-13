@@ -126,14 +126,6 @@ const AssessmentModel =
 				AssessmentEntity.addDisco(aid, number, Date.now() - discoTime);
 		});
 	},
-
-	endSession: function(aid, number, password, cb)
-	{
-		AssessmentEntity.endAssessment(aid, number, password, (err,ret) => {
-			if (!!err || !ret)
-				return cb(err,ret);
-		});
-	},
 };
 
 module.exports = AssessmentModel;

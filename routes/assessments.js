@@ -119,7 +119,7 @@ router.get("/end/assessment", access.ajax, (req,res) => {
 	if (error.length > 0)
 		return res.json({errmsg:error});
 	// Destroy pwd, set endTime
-	AssessmentModel.endSession(ObjectId(aid), number, password, (err,ret) => {
+	AssessmentEntity.endAssessment(ObjectId(aid), number, password, (err,ret) => {
 		access.checkRequest(res,err,ret,"Cannot end assessment", () => {
 			res.clearCookie('password');
 			res.json({});
