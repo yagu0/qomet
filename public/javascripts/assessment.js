@@ -10,7 +10,7 @@ function checkWindowSize()
 		return true;
 	// 3 is arbitrary, but a small tolerance is required (e.g. in Firefox)
 	return window.innerWidth >= screen.width-3 && window.innerHeight >= screen.height-3;
-};
+}
 
 new Vue({
 	el: "#assessment",
@@ -39,47 +39,36 @@ new Vue({
 	},
 	mounted: function() {
 		$(".modal").modal();
-		if (assessment.mode != "open")
-		{
-			window.addEventListener("keydown", e => {
-				// Ignore F12 (avoid accidental window resize due to devtools)
-				// NOTE: in Chromium at least, fullscreen mode exit with F11 cannot be prevented.
-				// Workaround: disable key at higher level. Possible xbindkey config:
-				// "false"
-				//   m:0x10 + c:95
-				//   Mod2 + F11
-				if (e.keyCode == 123)
-					e.preventDefault();
-			}, false);
-		}
+		if (["exam","open"].includes(assessment.mode))
+			return;
 		window.addEventListener("blur", () => {
-			if (!socket)
+			if (this.stage != 2)
 				return;
 			if (assessment.mode == "secure")
 			{
 				this.trySendCurrentAnswer();
 				document.location.href= "/noblur";
 			}
-			else if (assessment.mode == "exam")
+			else //"watch" mode
 				socket.emit(message.studentBlur, {number:this.student.number});
 		}, false);
-		if (assessment.mode == "exam")
+		if (assessment.mode == "watch")
 		{
 			window.addEventListener("focus", () => {
-				if (!socket)
+				if (this.stage != 2)
 					return;
 				socket.emit(message.studentFocus, {number:this.student.number});
 			}, false);
 		}
 		window.addEventListener("resize", e => {
-			if (!socket)
+			if (this.stage != 2)
 				return;
 			if (assessment.mode == "secure")
 			{
 				this.trySendCurrentAnswer();
-				document.location.href= "/fullscreen";
+				document.location.href = "/fullscreen";
 			}
-			else if (assessment.mode == "exam")
+			else //"watch" mode
 			{
 				if (checkWindowSize())
 					socket.emit(message.studentFullscreen, {number:this.student.number});
@@ -196,8 +185,10 @@ new Vue({
 				},
 			});
 		},
+
+
 		// stage 2
-		runTimer: function() {
+		runGlobalTimer: function() {
 			if (assessment.time <= 0)
 				return;
 			let self = this;
@@ -211,6 +202,23 @@ new Vue({
 				}
 			}, 1000);
 		},
+		runQuestionTimer: function(idx) {
+			if (assessment.questions[idx].time <= 0)
+				return;
+			let self = this; //TODO: question remaining time
+			setInterval( function() {
+				self.remainingTime--;
+				if (self.remainingTime <= 0)
+				{
+					if (self.stage == 2)
+						self.endAssessment();
+					clearInterval(this);
+				}
+			}, 1000);
+		},
+
+//TODO: get question after sending answer
+
 		// stage 2
 		sendOneAnswer: function() {
 			const realIndex = this.answers.indices[this.answers.index];
