@@ -27,51 +27,45 @@ block content
 			
 			
 			
-			#assessmentSettings.modal
-				.modal-content
-					form
-						p
-							input#active(type="checkbox" v-model="assessment.active")
-							label(for="active") Active
-						p
+			#assessmentEdit
+				form
+					p
+						input#active(type="checkbox" v-model="assessment.active")
+						label(for="active") Assessment is active
+					div
+						h4 Questions mode:
+						span(title="Exam mode, secured (class only): students cannot lose focus or exit fullscreen")
 							input#secure(name="status" type="radio" value="secure" v-model="assessment.mode")
-							label(for="secure") Exam mode, secured (class only)
-						p
+							label(for="secure") secure
+						span(title="Exam mode, watched (class only): teachers are notified when students lose focus or resize window")
 							input#watch(name="status" type="radio" value="watch" v-model="assessment.mode")
-							label(for="watch") Exam mode, watched (class only)
-						p
+							label(for="watch") watch
+						span(title="Exam mode, unwatched: students can browse the web freely")
 							input#exam(name="status" type="radio" value="exam" v-model="assessment.mode")
-							label(for="exam") Exam mode, free (class only)
-						p
+							label(for="exam") exam
+						span(title="Questions list open to the world (useful mode after an exam, or for a 'questions bank'")
 							input#open(name="status" type="radio" value="open" v-model="assessment.mode")
-							label(for="open") Open to everyone
-						p
-							input#fixed(type="checkbox" v-model="assessment.fixed")
-							label(for="fixed") Fixed questions order
-						p
+							label(for="open") open
+					p
+						input#fixed(type="checkbox" v-model="assessment.fixed")
+						label(for="fixed") Fixed questions order
+					div
+						h4 Display type:
+						span(title="Show only one question at a time (with potential sub-questions)")
 							input#displayOne(name="display" type="radio" value="one" v-model="assessment.display")
-							label(for="displayOne") One question at a time
-						p
+							label(for="displayOne") one
+						span(title="Always show all questions (with an optional navigator)")
 							input#displayAll(name="display" type="radio" value="all" v-model="assessment.display")
-							label(for="displayAll") Display all questions
-						.input-field
-							input#time(type="number" v-model.number="assessment.time")
-							label(for="time") Time (minutes)
-				.modal-footer
-					.center-align
-						a.modal-action.modal-close.waves-effect.waves-light.btn-flat(href="#!") Done
-			#assessmentEdit.modal
-				.modal-content
-					form
-						.input-field
-							textarea#introduction.materialize-textarea(v-model="assessment.introduction")
-							label(for="introduction") Introduction
-						.input-field
-							textarea#assessmentEdition.materialize-textarea(v-model="assessmentText")
-							label(for="assessmentEdition") Assessment in text format
-				.modal-footer
-					.center-align
-						a.modal-action.modal-close.waves-effect.waves-light.btn-flat(href="#!") Done
+							label(for="displayAll") all
+					.input-field
+						input#time(type="number" v-model.number="assessment.time")
+						label(for="time") Time (minutes)
+					.input-field
+						textarea#introduction.materialize-textarea(v-model="assessment.introduction")
+						label(for="introduction") Introduction
+					.input-field
+						textarea#assessmentEdition.materialize-textarea(v-model="assessmentText")
+						label(for="assessmentEdition") Assessment in text format
 			
 			
 			
@@ -121,6 +115,14 @@ block content
 		if teacher
 			.row(v-show="mode=='edit'")
 				.col.s12.m10.offset-m1
+
+
+
+
+					// TODO: always edit mode, with a modal preview
+
+
+
 					h4 {{ assessment.name }}
 					.card
 						.center-align
