@@ -5,9 +5,9 @@ const sanitizeHtml = require('sanitize-html');
 const ObjectId = require("bson-objectid");
 const CourseModel = require("../models/course");
 
-router.get('/add/course', access.ajax, access.logged, (req,res) => {
-	let code = req.query["code"];
-	let description = sanitizeHtml(req.query["description"]);
+router.post('/courses', access.ajax, access.logged, (req,res) => {
+	let code = req.body["code"];
+	let description = sanitizeHtml(req.body["description"]);
 	let error = validator({code:code}, "Course");
 	if (error.length > 0)
 		return res.json({errmsg:error});
@@ -18,9 +18,9 @@ router.get('/add/course', access.ajax, access.logged, (req,res) => {
 	});
 });
 
-router.get("/set/password", access.ajax, access.logged, (req,res) => {
-	let cid = req.query["cid"];
-	let pwd = req.query["pwd"];
+router.put("/courses/password", access.ajax, access.logged, (req,res) => {
+	let cid = req.body["cid"];
+	let pwd = req.body["pwd"];
 	let error = validator({password:pwd, _id:cid}, "Course");
 	if (error.length > 0)
 		return res.json({errmsg:error});
@@ -31,7 +31,7 @@ router.get("/set/password", access.ajax, access.logged, (req,res) => {
 	});
 });
 
-router.post('/import/students', access.ajax, access.logged, (req,res) => {
+router.put('/courses/student-list', access.ajax, access.logged, (req,res) => {
 	let cid = req.body["cid"];
 	let students = JSON.parse(req.body["students"]);
 	let error = validator({_id:cid, students: students}, "Course");
@@ -48,9 +48,9 @@ router.post('/import/students', access.ajax, access.logged, (req,res) => {
 	});
 });
 
-router.get('/get/student', access.ajax, (req,res) => {
-	let number = req.query["number"];
+router.get('/courses/student', access.ajax, (req,res) => {
 	let cid = req.query["cid"];
+	let number = req.query["number"];
 	let error = validator({ _id: cid, students: [{number:number}] }, "Course");
 	if (error.length > 0)
 		return res.json({errmsg:error});
@@ -61,7 +61,7 @@ router.get('/get/student', access.ajax, (req,res) => {
 	});
 });
 
-router.get('/remove/course', access.ajax, access.logged, (req,res) => {
+router.delete('/courses', access.ajax, access.logged, (req,res) => {
 	let cid = req.query["cid"];
 	let error = validator({_id:cid}, "Course");
 	if (error.length > 0)

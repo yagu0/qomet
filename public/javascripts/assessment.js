@@ -90,7 +90,7 @@ new Vue({
 		},
 		// stage 0 --> 1
 		getStudent: function() {
-			$.ajax("/get/student", {
+			$.ajax("/courses/student", {
 				method: "GET",
 				data: {
 					number: this.student.number,
@@ -163,8 +163,8 @@ new Vue({
 			};
 			if (assessment.mode == "open")
 				return initializeStage2();
-			$.ajax("/start/assessment", {
-				method: "GET",
+			$.ajax("/assessments/start", {
+				method: "PUT",
 				data: {
 					number: this.student.number,
 					aid: assessment._id
@@ -251,8 +251,8 @@ new Vue({
 				number: this.student.number,
 				password: this.student.password,
 			};
-			$.ajax("/send/answer", {
-				method: "GET",
+			$.ajax("/assessments/answer", {
+				method: "PUT",
 				data: answerData,
 				dataType: "json",
 				success: ret => {
@@ -282,8 +282,8 @@ new Vue({
 				this.answers.displayAll = true;
 				return;
 			}
-			$.ajax("/end/assessment", {
-				method: "GET",
+			$.ajax("/assessments/end", {
+				method: "PUT",
 				data: {
 					aid: assessment._id,
 					number: this.student.number,

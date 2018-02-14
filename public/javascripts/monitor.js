@@ -82,7 +82,7 @@ new Vue({
 		},
 		// stage 0 --> 1
 		startMonitoring: function() {
-			$.ajax("/start/monitoring", {
+			$.ajax("/assessments/monitor", {
 				method: "GET",
 				data: {
 					password: Sha1.Compute(this.password),

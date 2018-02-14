@@ -17,9 +17,9 @@ const sanitizeOpts = {
 	},
 };
 
-router.get("/add/assessment", access.ajax, access.logged, (req,res) => {
-	const name = req.query["name"];
-	const cid = req.query["cid"];
+router.post("/assessments", access.ajax, access.logged, (req,res) => {
+	const name = req.body["name"];
+	const cid = req.body["cid"];
 	let error = validator({cid:cid, name:name}, "Assessment");
 	if (error.length > 0)
 		return res.json({errmsg:error});
@@ -30,7 +30,7 @@ router.get("/add/assessment", access.ajax, access.logged, (req,res) => {
 	});
 });
 
-router.post("/update/assessment", access.ajax, access.logged, (req,res) => {
+router.put("/assessments", access.ajax, access.logged, (req,res) => {
 	const assessment = JSON.parse(req.body["assessment"]);
 	let error = validator(assessment, "Assessment");
 	if (error.length > 0)
@@ -50,9 +50,9 @@ router.post("/update/assessment", access.ajax, access.logged, (req,res) => {
 });
 
 // Generate and set student password, return it
-router.get("/start/assessment", access.ajax, (req,res) => {
-	let number = req.query["number"];
-	let aid = req.query["aid"];
+router.put("/assessments/start", access.ajax, (req,res) => {
+	let number = req.body["number"];
+	let aid = req.body["aid"];
 	let password = req.cookies["password"]; //potentially from cookies, resuming
 	let error = validator({ _id:aid, papers:[{number:number,password:password || "samplePwd"}] }, "Assessment");
 	if (error.length > 0)
@@ -72,7 +72,7 @@ router.get("/start/assessment", access.ajax, (req,res) => {
 	});
 });
 
-router.get("/start/monitoring", access.ajax, (req,res) => {
+router.get("/assessments/monitor", access.ajax, (req,res) => {
 	const password = req.query["password"];
 	const examName = req.query["aname"];
 	const courseCode = req.query["ccode"];
@@ -95,11 +95,11 @@ router.get("/start/monitoring", access.ajax, (req,res) => {
 	});
 });
 
-router.get("/send/answer", access.ajax, (req,res) => {
-	let aid = req.query["aid"];
-	let number = req.query["number"];
-	let password = req.query["password"];
-	let input = JSON.parse(req.query["answer"]);
+router.put("/assessments/answer", access.ajax, (req,res) => {
+	let aid = req.body["aid"];
+	let number = req.body["number"];
+	let password = req.body["password"];
+	let input = JSON.parse(req.body["answer"]);
 	let error = validator({ _id:aid, papers:[{number:number,password:password,inputs:[input]}] }, "Assessment");
 	if (error.length > 0)
 		return res.json({errmsg:error});
@@ -110,10 +110,10 @@ router.get("/send/answer", access.ajax, (req,res) => {
 	});
 });
 
-router.get("/end/assessment", access.ajax, (req,res) => {
-	let aid = req.query["aid"];
-	let number = req.query["number"];
-	let password = req.query["password"];
+router.put("/assessments/end", access.ajax, (req,res) => {
+	let aid = req.body["aid"];
+	let number = req.body["number"];
+	let password = req.body["password"];
 	let error = validator({ _id:aid, papers:[{number:number,password:password}] }, "Assessment");
 	if (error.length > 0)
 		return res.json({errmsg:error});

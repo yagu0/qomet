@@ -14,10 +14,14 @@ Imaginary example: (using math.js)
 	<div>Calculer le déterminant de 
 	$$\begin{matrix}7 & x\\y & -3\end{matrix}$$</div>
 	* ...
+
+--> input of type text (number, or vector, or matrix e.g. in R syntax)
+--> parameter stored in question.param (TODO)
+
 */
 
 Vue.component("statements", {
-	// 'inputs': array of index (as in questions) + input (text or array of ints)
+	// 'inputs': object with key = question index and value = text or boolean array
 	// display: 'all', 'one', 'solution'
 	// iidx: current level-0 integer index (can match a group of questions / inputs)
 	props: ['questions','inputs','display','iidx'],
@@ -28,113 +32,139 @@ Vue.component("statements", {
 	}
 	// Full questions tree is rendered, but some parts hidden depending on display settings
 	render(h) {
-		let domTree = (this.questions || [ ]).map( (q,i) => {
-			let questionContent = [ ];
-			questionContent.push(
-				h(
-					"h4",
-					{
-						"class": {
-							"questionIndex": true,
-						}
-					},
-					q.index
-				)
-			);
-			questionContent.push(
-				h(
-					"div",
-					{
-						"class": {
-							wording: true,
-
-						},
-						domProps: {
-							innerHTML: q.wording,
-						},
-					}
-				)
-			);
-			if (!!q.options)
-			{
-				// quiz-like question
-				let optionsOrder = _.range(q.options.length);
-				if (!q.fixed)
-					optionsOrder = _.shuffle(optionsOrder);
-				let optionList = [ ];
-				optionsOrder.forEach( idx => {
-					let option = [ ];
-					option.push(
-						h(
-							"input",
-							{
-								domProps: {
-									checked: this.answers.inputs.length > 0 && this.answers.inputs[i][idx],
-									disabled: monitoring,
-								},
-								attrs: {
-									id: this.inputId(i,idx),
-									type: "checkbox",
-								},
-								on: {
-									change: e => { this.answers.inputs[i][idx] = e.target.checked; },
-								},
-							},
-							[ '' ] //to work in Firefox 45.9 ESR @ ENSTA...
-						)
-					);
-					option.push(
-						h(
-							"label",
-							{
-								domProps: {
-									innerHTML: q.options[idx],
-								},
-								attrs: {
-									"for": this.inputId(i,idx),
-								},
+		// Prepare questions groups, ordered
+		let questions = this.questions || [ ]
+		let questionGroups = _.groupBy(questions, q => {
+			const dotPos = q.index.indexOf(".");
+			return dotPos === -1 ? q.index : q.index.substring(0,dotPos);
+		});
+		let domTree = questionGroups.map( (qg,i) => {
+			// Re-order questions 1.1.1 then 1.1.2 then...
+			const orderedQg = qg.sort( (a,b) => {
+				let aParts = a.split('.').map(Number);
+				let bParts = b.split('.').map(Number);
+				const La = aParts.length, Lb = bParts.length;
+				for (let i=0; i<Math.min(La,Lb); i++)
+				{
+					if (aParts[i] != bParts[i])
+						return aParts[i] - bParts[i];
+				}
+				return La - Lb; //the longer should appear after
+			});
+			let qgDom = orderedQg.map( q => {
+				let questionContent = [ ];
+				questionContent.push(
+					h(
+						"h4",
+						{
+							"class": {
+								"questionIndex": true,
 							}
-						)
-					);
-					optionList.push(
-						h(
-							"div",
-							{
-								"class": {
-									option: true,
-									choiceCorrect: this.answers.showSolution && this.questions[i].answer.includes(idx),
-									choiceWrong: this.answers.showSolution && this.answers.inputs[i][idx] && !q.answer.includes(idx),
-								},
-							},
-							option
-						)
-					);
-				});
+						},
+						q.index
+					)
+				);
 				questionContent.push(
 					h(
 						"div",
 						{
 							"class": {
-								optionList: true,
+								wording: true,
 							},
-						},
-						optionList
+							domProps: {
+								innerHTML: q.wording,
+							},
+						}
 					)
 				);
-			}
-			if (this.display == "all" && !this.navigator && i < this.questions.length-1)
-				questionContent.push( h("hr") );
-			const depth = (q.index.match(/\./g) || []).length;
+				if (!!q.options)
+				{
+					// quiz-like question
+					let optionsOrder = _.range(q.options.length);
+					if (!q.fixed)
+						optionsOrder = _.shuffle(optionsOrder);
+					let optionList = [ ];
+					optionsOrder.forEach( idx => {
+						let option = [ ];
+						option.push(
+							h(
+								"input",
+								{
+									domProps: {
+										checked: this.inputs[q.index][idx],
+										disabled: monitoring,
+									},
+									attrs: {
+										id: this.inputId(q.index,idx),
+										type: "checkbox",
+									},
+									on: {
+										change: e => { this.inputs[q.index][idx] = e.target.checked; },
+									},
+								},
+								[ '' ] //to work in Firefox 45.9 ESR @ ENSTA...
+							)
+						);
+						option.push(
+							h(
+								"label",
+								{
+									domProps: {
+										innerHTML: q.options[idx],
+									},
+									attrs: {
+										"for": this.inputId(q.index,idx),
+									},
+								}
+							)
+						);
+						optionList.push(
+							h(
+								"div",
+								{
+									"class": {
+										option: true,
+										choiceCorrect: this.display == "solution" && q.answer.includes(idx),
+										choiceWrong: this.display == "solution" && this.inputs[q.index][idx] && !q.answer.includes(idx),
+									},
+								},
+								option
+							)
+						);
+					});
+					questionContent.push(
+						h(
+							"div",
+							{
+								"class": {
+									optionList: true,
+								},
+							},
+							optionList
+						)
+					);
+				}
+				const depth = (q.index.match(/\./g) || []).length;
+				return h(
+					"div",
+					{
+						"class": {
+							"question": true,
+							"depth" + depth: true,
+						},
+					},
+					questionContent
+				);
+			});
 			return h(
 				"div",
 				{
 					"class": {
-						"question": true,
+						"questionGroup": true,
 						"hide": this.display == "one" && this.iidx != i,
-						"depth" + depth: true,
 					},
-				},
-				questionContent
+				}
+				qgDom
 			);
 		});
 		const navigator = h(
@@ -158,7 +188,7 @@ Vue.component("statements", {
 						},
 					},
 					[ h("span", { "class": { "material-icon": true } }, "fast_rewind") ]
-				), //onclick: index = max(0,index-1)
+				),
 				h("span",{ },(this.iidx+1).toString()),
 				h(
 					"button",

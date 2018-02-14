@@ -7,7 +7,7 @@ const access = require("../utils/access");
 const params = require("../config/parameters");
 
 // to: object user
-function sendLoginToken(subject, to, res)
+function setAndSendLoginToken(subject, to, res)
 {
 	// Set login token and send welcome(back) email with auth link
 	let token = TokenGen.generate(params.token.length);
@@ -28,12 +28,10 @@ function sendLoginToken(subject, to, res)
 	});
 }
 
-router.get('/register', access.ajax, access.unlogged, (req,res) => {
-	let email = decodeURIComponent(req.query.email);
-	let name = decodeURIComponent(req.query.name);
+router.post('/register', access.ajax, access.unlogged, (req,res) => {
 	const newUser = {
-		email: email,
-		name: name,
+		email: req.body.email,
+		name: req.body.name,
 	};
 	let error = validator(newUser, "User");
 	if (error.length > 0)
@@ -45,7 +43,7 @@ router.get('/register', access.ajax, access.unlogged, (req,res) => {
 			UserModel.create(newUser, (err,user) => {
 				access.checkRequest(res, err, user, "Registration failed", () => {
 					user.ip = req.ip;
-					sendLoginToken("Welcome to " + params.siteURL, user, res);
+					setAndSendLoginToken("Welcome to " + params.siteURL, user, res);
 				});
 			});
 		});
@@ -53,25 +51,22 @@ router.get('/register', access.ajax, access.unlogged, (req,res) => {
 });
 
 // Login:
-router.get('/sendtoken', access.ajax, access.unlogged, (req,res) => {
-	let email = decodeURIComponent(req.query.email);
+router.put('/sendtoken', access.ajax, access.unlogged, (req,res) => {
+	const email = req.body.email;
 	let error = validator({email:email}, "User");
 	if (error.length > 0)
 		return res.json({errmsg:error});
 	UserModel.getByEmail(email, (err,user) => {
 		access.checkRequest(res, err, user, "Unknown user", () => {
 			user.ip = req.ip;
-			sendLoginToken("Token for " + params.siteURL, user, res);
+			setAndSendLoginToken("Token for " + params.siteURL, user, res);
 		});
 	});
 });
 
 // Authentication process, optionally with email changing:
-router.get('/authenticate', access.unlogged, (req,res) => {
-	let loginToken = req.query.token;
-	let error = validator({token:loginToken}, "User");
-	if (error.length > 0)
-		return res.json({errmsg:error});
+router.put('/authenticate/:token([a-z0-9]+)', access.unlogged, (req,res) => {
+	const loginToken = req.params.token;
 	UserModel.getByLoginToken(loginToken, (err,user) => {
 		access.checkRequest(res, err, user, "Invalid token", () => {
 			if (user.loginToken.ip != req.ip)
@@ -101,7 +96,7 @@ router.get('/authenticate', access.unlogged, (req,res) => {
 	});
 });
 
-router.get('/logout', access.logged, (req,res) => {
+router.put('/logout', access.logged, (req,res) => {
 	UserModel.removeToken(req.user._id, req.cookies.token, (err,ret) => {
 		access.checkRequest(res, err, ret, "Logout failed", () => {
 			res.clearCookie("initials");

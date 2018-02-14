@@ -26,6 +26,7 @@ const AssessmentModel =
 	 *     answer: array of integers (for quiz) or html text (for paper); striped in exam mode
 	 *     active: boolean, is question in current assessment?
 	 *     points: points for this question (default 1)
+	 *     param: parameter (if applicable)
 	 *   papers : array of
 	 *     number: student number
 	 *     inputs: array of {index,answer[array of integers or html text],startTime}

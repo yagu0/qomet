@@ -8,6 +8,11 @@ const ajaxUrl = {
 	"register": "/register",
 };
 
+const ajaxMethod = {
+	"login": "PUT",
+	"register": "POST",
+};
+
 const infos = {
 	"login": "Connection token sent. Check your emails!",
 	"register": "Registration complete! Please check your emails.",
@@ -58,7 +63,7 @@ new Vue({
 			showMsg($dialog, "process", "Processing... Please wait");
 			$.ajax(ajaxUrl[this.stage],
 				{
-					method: "GET",
+					method: ajaxMethod[this.stage],
 					data:
 					{
 						email: encodeURIComponent(this.user.email),

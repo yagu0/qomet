@@ -91,8 +91,8 @@ new Vue({
 							d.number = d.number.toString();
 						students.push(d);
 					});
-					$.ajax("/import/students", {
-						method: "POST",
+					$.ajax("/courses/student-list", {
+						method: "PUT",
 						data: {
 							cid: this.course._id,
 							students: JSON.stringify(students),
@@ -118,9 +118,9 @@ new Vue({
 				return alert(error);
 			else
 				$('#newAssessment').modal('close');
-			$.ajax("/add/assessment",
+			$.ajax("/assessments",
 				{
-					method: "GET",
+					method: "POST",
 					data: {
 						name: this.newAssessment.name,
 						cid: course._id,
@@ -143,8 +143,8 @@ new Vue({
 			Materialize.updateTextFields(); //textareas, time field...
 		},
 		updateAssessment: function() {
-			$.ajax("/update/assessment", {
-				method: "POST",
+			$.ajax("/assessments", {
+				method: "PUT",
 				data: {assessment: JSON.stringify(this.assessment)},
 				dataType: "json",
 				success: res => {
@@ -163,9 +163,9 @@ new Vue({
 				return;
 			if (confirm("Delete assessment '" + assessment.name + "' ?"))
 			{
-				$.ajax("/remove/assessment",
+				$.ajax("/assessments",
 					{
-						method: "GET",
+						method: "DELETE",
 						data: { qid: this.assessment._id },
 						dataType: "json",
 						success: res => {
@@ -267,9 +267,9 @@ new Vue({
 			let error = Validator.checkObject({password:hashPwd}, "Course");
 			if (error.length > 0)
 				return alert(error);
-			$.ajax("/set/password",
+			$.ajax("/courses/password",
 				{
-					method: "GET",
+					method: "PUT",
 					data: {
 						cid: this.course._id,
 						pwd: hashPwd,

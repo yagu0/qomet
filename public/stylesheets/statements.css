@@ -3,9 +3,17 @@ button.sendAnswer {
 	margin: 0 auto;
 }
 
+.questionGroup {
+	/* TODO */
+}
+
 .question {
 	margin: 20px 5px;
 	padding: 15px 0;
+}
+
+.question:not(:last-child) {
+	border-bottom: 1px solid black;
 }
 
 .question label {

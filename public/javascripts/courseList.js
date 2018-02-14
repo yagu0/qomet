@@ -23,9 +23,9 @@ new Vue({
 				return alert(error);
 			else
 				$('#newCourse').modal('close');
-			$.ajax("/add/course",
+			$.ajax("/courses",
 				{
-					method: "GET",
+					method: "POST",
 					data: this.newCourse,
 					dataType: "json",
 					success: res => {
@@ -45,9 +45,9 @@ new Vue({
 			if (!admin)
 				return;
 			if (confirm("Delete course '" + course.code + "' ?"))
-				$.ajax("/remove/course",
+				$.ajax("/courses",
 					{
-						method: "GET",
+						method: "DELETE",
 						data: { cid: course._id },
 						dataType: "json",
 						success: res => {
