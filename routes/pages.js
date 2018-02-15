@@ -1,12 +1,12 @@
 let router = require("express").Router();
 const access = require("../utils/access");
 const UserModel = require("../models/user");
-const AssessmentModel = require("../models/assessment");
+const EvaluationModel = require("../models/evaluation");
 const CourseModel = require("../models/course");
 
 // Actual pages (least specific last)
 
-// List initials and count assessments
+// List initials and count evaluations
 router.get("/", (req,res) => {
 	UserModel.getAll( (err,userArray) => {
 		if (!!err)
@@ -75,7 +75,7 @@ router.get("/:initials([a-z0-9]+)/:courseCode([a-z0-9._-]+)", (req,res) => {
 	let code = req.params["courseCode"];
 	CourseModel.getByRefs(initials, code, (err,course) => {
 		access.checkRequest(res, err, course, "Course not found", () => {
-			AssessmentModel.getByCourse(course._id, (err2,assessmentArray) => {
+			EvaluationModel.getByCourse(course._id, (err2,evaluationArray) => {
 				if (!!err)
 					return res.json(err);
 				access.getUser(req, res, (err2,user) => {
@@ -86,7 +86,7 @@ router.get("/:initials([a-z0-9]+)/:courseCode([a-z0-9._-]+)", (req,res) => {
 					res.render("course", {
 						title: "course " + initials + "/" + code,
 						course: course,
-						assessmentArray: assessmentArray,
+						evaluationArray: evaluationArray,
 						teacher: isTeacher,
 						initials: initials,
 					});
@@ -108,17 +108,17 @@ router.get("/:initials([a-z0-9]+)/:courseCode([a-z0-9._-]+)/grade", (req,res) =>
 	});
 });
 
-// Display assessment (exam or open status)
-router.get("/:initials([a-z0-9]+)/:courseCode([a-z0-9._-]+)/:assessmentName([a-z0-9._-]+)", (req,res) => {
+// Display evaluation (exam or open status)
+router.get("/:initials([a-z0-9]+)/:courseCode([a-z0-9._-]+)/:evaluationName([a-z0-9._-]+)", (req,res) => {
 	let initials = req.params["initials"];
 	let code = req.params["courseCode"];
-	let name = req.params["assessmentName"];
-	AssessmentModel.getByRefs(initials, code, name, (err,assessment) => {
-		access.checkRequest(res, err, assessment, "Assessment not found", () => {
-			if (!assessment.active)
-				return res.json({errmsg: "Assessment is idle"});
-			delete assessment["papers"]; //always remove recorded students answers
-			if (assessment.mode == "exam")
+	let name = req.params["evaluationName"];
+	EvaluationModel.getByRefs(initials, code, name, (err,evaluation) => {
+		access.checkRequest(res, err, evaluation, "Evaluation not found", () => {
+			if (!evaluation.active)
+				return res.json({errmsg: "Evaluation is idle"});
+			delete evaluation["papers"]; //always remove recorded students answers
+			if (evaluation.mode == "exam")
 			{
 				if (!!req.headers['user-agent'].match(/(SpecialAgent|HeadlessChrome|PhantomJS)/))
 				{
@@ -126,24 +126,24 @@ router.get("/:initials([a-z0-9]+)/:courseCode([a-z0-9._-]+)/:assessmentName([a-z
 					return res.json({errmsg: "Headless browser detected"});
 				}
 				// Strip questions if exam mode (stepwise process)
-				delete assessment["questions"];
+				delete evaluation["questions"];
 			}
-			res.render("assessment", {
-				title: "assessment " + initials + "/" + code + "/" + name,
-				assessment: assessment,
+			res.render("evaluation", {
+				title: "evaluation " + initials + "/" + code + "/" + name,
+				evaluation: evaluation,
 			});
 		});
 	});
 });
 
 // Monitor: --> after identification (password), always send secret with requests
-router.get("/:initials([a-z0-9]+)/:courseCode([a-z0-9._-]+)/:assessmentName([a-z0-9._-]+)/monitor", (req,res) => {
+router.get("/:initials([a-z0-9]+)/:courseCode([a-z0-9._-]+)/:evaluationName([a-z0-9._-]+)/monitor", (req,res) => {
 	let initials = req.params["initials"];
 	let code = req.params["courseCode"];
-	let name = req.params["assessmentName"];
+	let name = req.params["evaluationName"];
 	// TODO: if (main) teacher, also send secret, saving one request
 	res.render("monitor", {
-		title: "monitor assessment " + code + "/" + name,
+		title: "monitor evaluation " + code + "/" + name,
 		initials: initials,
 		courseCode: code,
 		examName: name,

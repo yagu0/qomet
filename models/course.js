@@ -1,5 +1,5 @@
 const UserModel = require("../models/user");
-const AssessmentModel = require("../models/assessment");
+const EvaluationModel = require("../models/evaluation");
 const db = require("../utils/database");
 
 const CourseModel =
@@ -159,8 +159,8 @@ const CourseModel =
 		CourseModel.getById(cid, (err,course) => {
 			if (!!err || !course || !course.uid.equals(uid))
 				return cb({errmsg:"Not your course"},{});
-			// 2) remove all associated assessments
-			AssessmentModel.removeGroup(cid, (err2,ret) => {
+			// 2) remove all associated evaluations
+			EvaluationModel.removeGroup(cid, (err2,ret) => {
 				if (!!err)
 					return cb(err,{});
 				// 3) remove course (with its students)

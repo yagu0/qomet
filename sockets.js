@@ -1,6 +1,6 @@
 const message = require("./public/javascripts/utils/socketMessages");
 const params = require("./config/parameters");
-const AssessmentModel = require("./models/assessment");
+const EvaluationModel = require("./models/evaluation");
 const ObjectId = require("bson-objectid");
 
 module.exports = function(io)
@@ -20,10 +20,10 @@ module.exports = function(io)
 		{
 			const number = socket.handshake.query.number;
 			const password = socket.handshake.query.password;
-			AssessmentModel.checkPassword(ObjectId(aid), number, password, (err,ret) => {
+			EvaluationModel.checkPassword(ObjectId(aid), number, password, (err,ret) => {
 				if (!!err || !ret)
 					return; //wrong password, or some unexpected error...
-				AssessmentModel.newConnection(ObjectId(aid), number);
+				EvaluationModel.newConnection(ObjectId(aid), number);
 				socket.broadcast.to(aid + "_teacher").emit(message.studentConnect, {number: number});
 				socket.join(aid + "_student");
 				socket.on(message.newAnswer, m => { //got answer from student client
@@ -42,7 +42,7 @@ module.exports = function(io)
 					socket.broadcast.to(aid + "_teacher").emit(message.studentFullscreen, m);
 				});
 				socket.on("disconnect", () => { //notify monitor + server
-					AssessmentModel.setDiscoTime(ObjectId(aid), number);
+					EvaluationModel.setDiscoTime(ObjectId(aid), number);
 					socket.broadcast.to(aid + "_teacher").emit(message.studentDisconnect, {number: number});
 				});
 			});

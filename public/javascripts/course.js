@@ -1,7 +1,5 @@
 /*Draft format (compiled to json)
 
-> Some global (HTML) intro
-
 <some html question (or/+ exercise intro)>
 
 	<some html subQuestion>
@@ -27,31 +25,32 @@
 new Vue({
 	el: '#course',
 	data: {
-		display: "assessments", //or "students", or "grades" (admin mode)
+		display: "evaluations", //or "students", or "grades" (admin mode)
 		course: course,
-		mode: "view", //or "edit" (some assessment)
 		monitorPwd: "",
-		newAssessment: { name: "" },
-		assessmentArray: assessmentArray,
-		assessmentIndex: 0, //current edited assessment index
-		assessment: { }, //copy of assessment at editing index in array
-		assessmentText: "", //questions in an assessment, in text format
+		newEvaluation: { name: "" },
+		evaluationArray: evaluationArray,
+		mode: "view", //or "edit" (some evaluation)
+		evaluationIndex: 0, //current edited evaluation index
+		evaluation: { }, //copy of evaluation at editing index in array
+		questionsText: "", //questions in an evaluation, in text format
 	},
 	mounted: function() {
+		
+		
+		
 		$('.modal').each( (i,elem) => {
-			if (elem.id != "assessmentEdit")
+			if (elem.id != "evaluationEdit")
 				$(elem).modal();
 		});
-		$('ul.tabs').tabs();
-		$('#assessmentEdit').modal({
+		$('ul.tabs').tabs(); //--> migrate to grade.js
+		
+		
+		
+		$('#evaluationEdit').modal({
 			complete: () => {
-				this.parseAssessment();
-				Vue.nextTick( () => {
-					$("#questionList").find("code[class^=language-]").each( (i,elem) => {
-						Prism.highlightElement(elem);
-					});
-					MathJax.Hub.Queue(["Typeset",MathJax.Hub,"questionList"]);
-				});
+				this.parseEvaluation();
+				Vue.nextTick(statementsLibsRefresh);
 			},
 		});
 	},
@@ -108,29 +107,29 @@ new Vue({
 				},
 			});
 		},
-		// ASSESSMENT:
-		addAssessment: function() {
+		// evaluation:
+		addEvaluation: function() {
 			if (!admin)
 				return;
 			// modal, fill code and description
-			let error = Validator.checkObject(this.newAssessment, "Assessment");
+			let error = Validator.checkObject(this.newEvaluation, "Evaluation");
 			if (!!error)
 				return alert(error);
 			else
-				$('#newAssessment').modal('close');
-			$.ajax("/assessments",
+				$('#newEvaluation').modal('close');
+			$.ajax("/evaluations",
 				{
 					method: "POST",
 					data: {
-						name: this.newAssessment.name,
+						name: this.newEvaluation.name,
 						cid: course._id,
 					},
 					dataType: "json",
 					success: res => {
 						if (!res.errmsg)
 						{
-							this.newAssessment["name"] = "";
-							this.assessmentArray.push(res);
+							this.newEvaluation["name"] = "";
+							this.evaluationArray.push(res);
 						}
 						else
 							alert(res.errmsg);
@@ -142,15 +141,15 @@ new Vue({
 			$("#" + id).modal("open");
 			Materialize.updateTextFields(); //textareas, time field...
 		},
-		updateAssessment: function() {
-			$.ajax("/assessments", {
+		updateEvaluation: function() {
+			$.ajax("/evaluations", {
 				method: "PUT",
-				data: {assessment: JSON.stringify(this.assessment)},
+				data: {evaluation: JSON.stringify(this.evaluation)},
 				dataType: "json",
 				success: res => {
 					if (!res.errmsg)
 					{
-						this.assessmentArray[this.assessmentIndex] = this.assessment;
+						this.evaluationArray[this.evaluationIndex] = this.evaluation;
 						this.mode = "view";
 					}
 					else
@@ -158,20 +157,20 @@ new Vue({
 				},
 			});
 		},
-		deleteAssessment: function(assessment) {
+		deleteEvaluation: function(evaluation) {
 			if (!admin)
 				return;
-			if (confirm("Delete assessment '" + assessment.name + "' ?"))
+			if (confirm("Delete evaluation '" + evaluation.name + "' ?"))
 			{
-				$.ajax("/assessments",
+				$.ajax("/evaluations",
 					{
 						method: "DELETE",
-						data: { qid: this.assessment._id },
+						data: { qid: this.evaluation._id },
 						dataType: "json",
 						success: res => {
 							if (!res.errmsg)
-								this.assessmentArray.splice( this.assessmentArray.findIndex( item => {
-									return item._id == assessment._id;
+								this.evaluationArray.splice( this.evaluationArray.findIndex( item => {
+									return item._id == evaluation._id;
 								}), 1 );
 							else
 								alert(res.errmsg);
@@ -181,16 +180,16 @@ new Vue({
 			}
 		},
 		toggleState: function(questionIndex) {
-			// add or remove from activeSet of current assessment
-			let activeIndex = this.assessment.activeSet.findIndex( item => { return item == questionIndex; });
+			// add or remove from activeSet of current evaluation
+			let activeIndex = this.evaluation.activeSet.findIndex( item => { return item == questionIndex; });
 			if (activeIndex >= 0)
-				this.assessment.activeSet.splice(activeIndex, 1);
+				this.evaluation.activeSet.splice(activeIndex, 1);
 			else
-				this.assessment.activeSet.push(questionIndex);
+				this.evaluation.activeSet.push(questionIndex);
 		},
-		setAssessmentText: function() {
+		setEvaluationText: function() {
 			let txt = "";
-			this.assessment.questions.forEach( q => {
+			this.evaluation.questions.forEach( q => {
 				txt += q.wording; //already ended by \n
 				q.options.forEach( (o,i) => {
 					let symbol = q.answer.includes(i) ? "+" : "-";
@@ -198,11 +197,11 @@ new Vue({
 				});
 				txt += "\n"; //separate questions by new line
 			});
-			this.assessmentText = txt;
+			this.questionsText = txt;
 		},
-		parseAssessment: function() {
+		parseEvaluation: function() {
 			let questions = [ ];
-			let lines = this.assessmentText.split("\n").map( L => { return L.trim(); })
+			let lines = this.questionsText.split("\n").map( L => { return L.trim(); })
 			lines.push(""); //easier parsing
 			let emptyQuestion = () => {
 				return {
@@ -239,28 +238,23 @@ new Vue({
 					}
 				}
 			});
-			this.assessment.questions = questions;
+			this.evaluation.questions = questions;
 		},
-		actionAssessment: function(index) {
+		actionEvaluation: function(index) {
 			if (admin)
 			{
 				// Edit screen
-				this.assessmentIndex = index;
-				this.assessment = $.extend(true, {}, this.assessmentArray[index]);
-				this.setAssessmentText();
+				this.evaluationIndex = index;
+				this.evaluation = $.extend(true, {}, this.evaluationArray[index]);
+				this.setEvaluationText();
 				this.mode = "edit";
-				Vue.nextTick( () => {
-					$("#questionList").find("code[class^=language-]").each( (i,elem) => {
-						Prism.highlightElement(elem);
-					});
-					MathJax.Hub.Queue(["Typeset",MathJax.Hub,"questionList"]);
-				});
+				Vue.nextTick(statementsLibsRefresh);
 			}
-			else //external user: show assessment
-				this.redirect(this.assessmentArray[index].name);
+			else //external user: show evaluation
+				this.redirect(this.evaluationArray[index].name);
 		},
-		redirect: function(assessmentName) {
-			document.location.href = "/" + initials + "/" + course.code + "/" + assessmentName;
+		redirect: function(evaluationName) {
+			document.location.href = "/" + initials + "/" + course.code + "/" + evaluationName;
 		},
 		setPassword: function() {
 			let hashPwd = Sha1.Compute(this.monitorPwd);

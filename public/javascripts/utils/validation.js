@@ -2,7 +2,7 @@ try { var _ = require("underscore"); } catch (err) {} //for server
 
 let Validator = { };
 
-// Cell in assessment.questions array
+// Cell in evaluation.questions array
 Validator.Question = {
 	"index": "section", //"2.2.1", "3.2", "1" ...etc
 	"wording": "string",
@@ -32,7 +32,7 @@ Validator.Paper = {
 	"password": "password",
 };
 
-Validator.Assessment = {
+Validator.Evaluation = {
 	"_id": "bson",
 	"cid": "bson",
 	"name": "code",

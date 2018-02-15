@@ -7,74 +7,19 @@ block append stylesheets
 block content
 	.container#course
 		if teacher
-			#newAssessment.modal
+			#newevaluation.modal
 				.modal-content
-					form(@submit.prevent="addAssessment")
+					form(@submit.prevent="addevaluation")
 						.input-field
-							input#assessmentName(type="text" v-model="newAssessment.name" required)
-							label(for="assessmentName") Name
+							input#evaluationName(type="text" v-model="newEvaluation.name" required)
+							label(for="evaluationName") Name
 				.modal-footer
 					.center-align
-						a.waves-effect.waves-light.btn(href="#!" @click="addAssessment()")
+						a.waves-effect.waves-light.btn(href="#!" @click="addEvaluation()")
 							span Submit
 							i.material-icons.right send
-		.row(v-show="mode=='view'")
-			
-			
-			
-			
-			
-			
-			
-			
-			#assessmentEdit
-				form
-					p
-						input#active(type="checkbox" v-model="assessment.active")
-						label(for="active") Assessment is active
-					div
-						h4 Questions mode:
-						span(title="Exam mode, secured (class only): students cannot lose focus or exit fullscreen")
-							input#secure(name="status" type="radio" value="secure" v-model="assessment.mode")
-							label(for="secure") secure
-						span(title="Exam mode, watched (class only): teachers are notified when students lose focus or resize window")
-							input#watch(name="status" type="radio" value="watch" v-model="assessment.mode")
-							label(for="watch") watch
-						span(title="Exam mode, unwatched: students can browse the web freely")
-							input#exam(name="status" type="radio" value="exam" v-model="assessment.mode")
-							label(for="exam") exam
-						span(title="Questions list open to the world (useful mode after an exam, or for a 'questions bank'")
-							input#open(name="status" type="radio" value="open" v-model="assessment.mode")
-							label(for="open") open
-					p
-						input#fixed(type="checkbox" v-model="assessment.fixed")
-						label(for="fixed") Fixed questions order
-					div
-						h4 Display type:
-						span(title="Show only one question at a time (with potential sub-questions)")
-							input#displayOne(name="display" type="radio" value="one" v-model="assessment.display")
-							label(for="displayOne") one
-						span(title="Always show all questions (with an optional navigator)")
-							input#displayAll(name="display" type="radio" value="all" v-model="assessment.display")
-							label(for="displayAll") all
-					.input-field
-						input#time(type="number" v-model.number="assessment.time")
-						label(for="time") Time (minutes)
-					.input-field
-						textarea#introduction.materialize-textarea(v-model="assessment.introduction")
-						label(for="introduction") Introduction
-					.input-field
-						textarea#assessmentEdition.materialize-textarea(v-model="assessmentText")
-						label(for="assessmentEdition") Assessment in text format
-			
-			
-			
-			
-			
-			
-			
-			.col.s12.m10.offset-m1
-				if teacher
+			.row
+				.col.s12.m10.offset-m1
 					h4.title(@click="toggleDisplay('students')") Students
 					.card(v-show="display=='students'")
 						.center-align
@@ -91,11 +36,13 @@ block content
 									td {{ student.number }}
 									td {{ student.name }}
 									td {{ student.group }}
-				h4.title(@click="toggleDisplay('assessments')") Assessments
-				.card(v-show="display=='assessments'")
+		.row
+			.col.s12.m10.offset-m1
+				h4.title(@click="toggleDisplay('evaluations')") evaluations
+				.card(v-show="display=='evaluations'")
 					if teacher
 						.center-align
-							a.on-left.waves-effect.waves-light.btn.modal-trigger(href="#newAssessment") New assessment
+							a.on-left.waves-effect.waves-light.btn.modal-trigger(href="#newevaluation") New evaluation
 							input#password(type="password" v-model="monitorPwd" @keyup.enter="setPassword"
 									placeholder="Password" title="Monitoring password")
 					table
@@ -104,54 +51,74 @@ block content
 								th Name
 								th Mode
 								th #Questions
-								th Time
 						tbody
-							tr.assessment(v-for="(assessment,i) in assessmentArray" :class="{idle:!assessment.active}"
-									@click.left="actionAssessment(i)" @contextmenu.prevent="deleteAssessment(assessment)")
-								td {{ assessment.name }}
-								td {{ assessment.mode }}
-								td {{ assessment.questions.reduce( (a,b) => { return b.active ? a+1 : a; }, 0) }}
-								td {{ assessment.time }}
+							tr.evaluation(v-for="(evaluation,i) in evaluationArray" :class="{idle:!evaluation.active}"
+									@click.left="actionevaluation(i)" @contextmenu.prevent="deleteevaluation(evaluation)")
+								td {{ evaluation.name }}
+								td {{ evaluation.mode }}
+								td {{ evaluation.questions.length }}
 		if teacher
-			.row(v-show="mode=='edit'")
+			.row
 				.col.s12.m10.offset-m1
-
-
-
-
-					// TODO: always edit mode, with a modal preview
-
-
-
-					h4 {{ assessment.name }}
-					.card
+					h4 {{ evaluation.name }}
+					.card(v-show="mode=='view'")
 						.center-align
-							button.waves-effect.waves-light.btn.on-left(@click="materialOpenModal('assessmentSettings')") Settings
-							button.waves-effect.waves-light.btn.on-left(@click="materialOpenModal('assessmentEdit')") Content
-							button.waves-effect.waves-light.btn(@click="redirect(assessment.name)") View
-						#questionList
-							.introduction(v-html="assessment.introduction")
-							.question(v-for="(question,i) in assessment.questions" :class="{questionInactive:!question.active}")
-								.wording(v-html="question.wording")
-								.option(v-for="(option,j) in question.options" :class="{choiceCorrect:question.answer.includes(j)}" v-html="option")
-								p
-									input(:id="checkboxFixedId(i)" type="checkbox" v-model="question.fixed")
-									label.on-left(:for="checkboxFixedId(i)") Fixed
-									input(:id="checkboxActiveId(i)" type="checkbox" v-model="question.active")
-									label(:for="checkboxActiveId(i)") Active
-									input(time default 0 = untimed)
-									label Time for the question
-						.center-align
-							button.waves-effect.waves-light.btn.on-left(@click="mode='view'") Cancel
-							button.waves-effect.waves-light.btn(@click="updateAssessment") Send
+							button.waves-effect.waves-light.btn.on-left(@click="mode='edit'") Edit
+							button.waves-effect.waves-light.btn(@click="redirect(evaluation.name)") View
+						div
+							.introduction(v-html="evaluation.introduction")
+							statements(:questions="evaluation.questions" :display="solution")
+					.card(v-show="mode=='edit'")
+						form(@submit.prevent)
+							p
+								input#active(type="checkbox" v-model="evaluation.active")
+								label(for="active") evaluation is active
+							div
+								h4 Questions mode:
+								span(title="Exam mode, secured (class only): students cannot lose focus or exit fullscreen")
+									input#secure(name="status" type="radio" value="secure" v-model="evaluation.mode")
+									label(for="secure") secure
+								span(title="Exam mode, watched (class only): teachers are notified when students lose focus or resize window")
+									input#watch(name="status" type="radio" value="watch" v-model="evaluation.mode")
+									label(for="watch") watch
+								span(title="Exam mode, unwatched: students can browse the web freely")
+									input#exam(name="status" type="radio" value="exam" v-model="evaluation.mode")
+									label(for="exam") exam
+								span(title="Questions list open to the world (useful mode after an exam, or for a 'questions bank'")
+									input#open(name="status" type="radio" value="open" v-model="evaluation.mode")
+									label(for="open") open
+							p
+								input#fixed(type="checkbox" v-model="evaluation.fixed")
+								label(for="fixed") Fixed questions order
+							div
+								h4 Display type:
+								span(title="Show only one question at a time (with potential sub-questions)")
+									input#displayOne(name="display" type="radio" value="one" v-model="evaluation.display")
+									label(for="displayOne") one
+								span(title="Always show all questions (with an optional navigator)")
+									input#displayAll(name="display" type="radio" value="all" v-model="evaluation.display")
+									label(for="displayAll") all
+							.input-field
+								input#time(type="number" v-model.number="evaluation.time")
+								label(for="time") Time (minutes)
+							.input-field
+								textarea#introduction.materialize-textarea(v-model="evaluation.introduction")
+								label(for="introduction") Introduction
+							.input-field
+								textarea#evaluationEdition.materialize-textarea(v-model="evaluationText")
+								label(for="evaluationEdition") evaluation in text format
+							.center-align
+								button.waves-effect.waves-light.btn.on-left(@click="updateEvaluation()") Send
+								button.waves-effect.waves-light.btn(@click="mode='view'") Cancel
 
 block append javascripts
 	script(src="//cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.6/papaparse.min.js")
 	script.
-		let assessmentArray = !{JSON.stringify(assessmentArray)};
+		let evaluationArray = !{JSON.stringify(evaluationArray)};
 		const course = !{JSON.stringify(course)};
 		const initials = "#{initials}";
 		const admin = #{teacher};
 	script(src="/javascripts/utils/sha1.js")
 	script(src="/javascripts/utils/validation.js")
+	script(src="/javascripts/components/statements.js")
 	script(src="/javascripts/course.js")

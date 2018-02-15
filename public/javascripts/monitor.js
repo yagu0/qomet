@@ -4,7 +4,7 @@ new Vue({
 	el: "#monitor",
 	data: {
 		password: "", //from password field
-		assessment: { }, //obtained after authentication
+		evaluation: { }, //obtained after authentication
 		// Stage 0: unauthenticated (password),
 		//       1: authenticated (password hash validated), start monitoring
 		stage: 0,
@@ -15,7 +15,7 @@ new Vue({
 			index : -1,
 		},
 		students: [ ], //to know their names
-		display: "assessment", //or student's answers
+		display: "evaluation", //or student's answers
 	},
 	methods: {
 		// TODO: redundant code, next 4 funcs already exist in course.js
@@ -52,11 +52,11 @@ new Vue({
 			{
 				if (!s.present)
 					continue;
-				const paperIdx = this.assessment.papers.findIndex( item => { return item.number == s.number; });
+				const paperIdx = this.evaluation.papers.findIndex( item => { return item.number == s.number; });
 				if (paperIdx === -1)
 					return false;
-				const paper = this.assessment.papers[paperIdx];
-				if (paper.inputs.length < this.assessment.questions.length)
+				const paper = this.evaluation.papers[paperIdx];
+				if (paper.inputs.length < this.evaluation.questions.length)
 					return false;
 			}
 			return true;
@@ -64,16 +64,16 @@ new Vue({
 		getColor: function(number, qIdx) {
 			// For the moment, green if correct and red if wrong; grey if unanswered yet
 			// TODO: in-between color for partially right (especially for multi-questions)
-			const paperIdx = this.assessment.papers.findIndex( item => { return item.number == number; });
+			const paperIdx = this.evaluation.papers.findIndex( item => { return item.number == number; });
 			if (paperIdx === -1)
 				return "grey"; //student didn't start yet
-			const inputIdx = this.assessment.papers[paperIdx].inputs.findIndex( item => {
+			const inputIdx = this.evaluation.papers[paperIdx].inputs.findIndex( item => {
 				const qNum = parseInt(item.index.split(".")[0]); //indexes separated by dots
 				return qIdx == qNum;
 			});
 			if (inputIdx === -1)
 				return "grey";
-			if (_.isEqual(this.assessment.papers[paperIdx].inputs[inputIdx].input, this.assessment.questions[qIdx].answer))
+			if (_.isEqual(this.evaluation.papers[paperIdx].inputs[inputIdx].input, this.evaluation.questions[qIdx].answer))
 				return "green";
 			return "red";
 		},
@@ -82,7 +82,7 @@ new Vue({
 		},
 		// stage 0 --> 1
 		startMonitoring: function() {
-			$.ajax("/assessments/monitor", {
+			$.ajax("/evaluations/monitor", {
 				method: "GET",
 				data: {
 					password: Sha1.Compute(this.password),
@@ -94,8 +94,8 @@ new Vue({
 				success: s => {
 					if (!!s.errmsg)
 						return alert(s.errmsg);
-					this.assessment = s.assessment;
-					this.answers.inputs = s.assessment.questions.map( q => {
+					this.evaluation = s.evaluation;
+					this.answers.inputs = s.evaluation.questions.map( q => {
 						let input = _(q.options.length).times( _.constant(false) );
 						q.answer.forEach( idx => { input[idx] = true; });
 						return input;
@@ -104,7 +104,7 @@ new Vue({
 					this.students.forEach( s => { s.present = true; }); //a priori...
 					this.stage = 1;
 					socket = io.connect("/", {
-						query: "aid=" + this.assessment._id + "&secret=" + s.secret
+						query: "aid=" + this.evaluation._id + "&secret=" + s.secret
 					});
 					socket.on(message.studentBlur, m => {
 						const sIdx = this.students.findIndex( item => { return item.number == m.number; });
@@ -134,20 +134,20 @@ new Vue({
 						this.students[sIdx].disco = false;
 					});
 					socket.on(message.newAnswer, m => {
-						let paperIdx = this.assessment.papers.findIndex( item => {
+						let paperIdx = this.evaluation.papers.findIndex( item => {
 							return item.number == m.number;
 						});
 						if (paperIdx === -1)
 						{
 							// First answer
-							paperIdx = this.assessment.papers.length;
-							this.assessment.papers.push({
+							paperIdx = this.evaluation.papers.length;
+							this.evaluation.papers.push({
 								number: m.number,
 								inputs: [ ], //other fields irrelevant here
 							});
 						}
 						// TODO: notations not coherent (input / answer... when, which ?)
-						this.assessment.papers[paperIdx].inputs.push(JSON.parse(m.answer)); //input+index
+						this.evaluation.papers[paperIdx].inputs.push(JSON.parse(m.answer)); //input+index
 					});
 				},
 			});
@@ -157,7 +157,7 @@ new Vue({
 			// TODO: disable this button until everyone finished (need ability to mark absents)
 			socket.emit(
 				message.allAnswers,
-				{ answers: JSON.stringify(this.assessment.questions.map( q => { return q.answer; })) }
+				{ answers: JSON.stringify(this.evaluation.questions.map( q => { return q.answer; })) }
 			);
 		},
 	},

@@ -4,7 +4,7 @@ const ObjectId = require("bson-objectid");
 const TokenGen = require("../utils/tokenGenerator");
 const db = require("../utils/database");
 
-const AssessmentModel =
+const EvaluationModel =
 {
 	/*
 	 * Structure:
@@ -24,7 +24,7 @@ const AssessmentModel =
 	 *     options: array of varchar --> if present, question type == quiz!
 	 *     fixed: bool, options in fixed order (default: false)
 	 *     answer: array of integers (for quiz) or html text (for paper); striped in exam mode
-	 *     active: boolean, is question in current assessment?
+	 *     active: boolean, is question in current evaluation?
 	 *     points: points for this question (default 1)
 	 *     param: parameter (if applicable)
 	 *   papers : array of
@@ -40,17 +40,17 @@ const AssessmentModel =
 	//////////////////
 	// BASIC FUNCTIONS
 
-	getById: function(aid, callback)
+	getById: function(eid, callback)
 	{
-		db.assessments.findOne(
-			{ _id: aid },
+		db.evaluations.findOne(
+			{ _id: eid },
 			callback
 		);
 	},
 
 	getByPath: function(cid, name, callback)
 	{
-		db.assessments.findOne(
+		db.evaluations.findOne(
 			{
 				cid: cid,
 				name: name,
@@ -61,7 +61,7 @@ const AssessmentModel =
 
 	insert: function(cid, name, callback)
 	{
-		db.assessments.insert(
+		db.evaluations.insert(
 			{
 				name: name,
 				cid: cid,
@@ -81,34 +81,34 @@ const AssessmentModel =
 
 	getByCourse: function(cid, callback)
 	{
-		db.assessments.find(
+		db.evaluations.find(
 			{ cid: cid },
 			callback
 		);
 	},
 
-	// arg: full assessment without _id field
-	replace: function(aid, assessment, cb)
+	// arg: full evaluation without _id field
+	replace: function(eid, evaluation, cb)
 	{
 		// Should be: (but unsupported by mongojs)
-//		db.assessments.replaceOne(
-//			{ _id: aid },
-//			assessment,
+//		db.evaluations.replaceOne(
+//			{ _id: eid },
+//			evaluation,
 //			cb
 //		);
 		// Temporary workaround:
-		db.assessments.update(
-			{ _id: aid },
-			{ $set: assessment },
+		db.evaluations.update(
+			{ _id: eid },
+			{ $set: evaluation },
 			cb
 		);
 	},
 
-	getQuestions: function(aid, callback)
+	getQuestions: function(eid, callback)
 	{
-		db.assessments.findOne(
+		db.evaluations.findOne(
 			{
-				_id: aid,
+				_id: eid,
 				display: "all",
 			},
 			{ questions: 1},
@@ -118,11 +118,11 @@ const AssessmentModel =
 		);
 	},
 
-	getQuestion: function(aid, index, callback)
+	getQuestion: function(eid, index, callback)
 	{
-		db.assessments.findOne(
+		db.evaluations.findOne(
 			{
-				_id: aid,
+				_id: eid,
 				display: "one",
 			},
 			{ questions: 1},
@@ -137,11 +137,11 @@ const AssessmentModel =
 		);
 	},
 
-	getPaperByNumber: function(aid, number, callback)
+	getPaperByNumber: function(eid, number, callback)
 	{
-		db.assessments.findOne(
+		db.evaluations.findOne(
 			{
-				_id: aid,
+				_id: eid,
 				"papers.number": number,
 			},
 			(err,a) => {
@@ -159,11 +159,11 @@ const AssessmentModel =
 	// NOTE: no callbacks for 2 next functions, failures are not so important
 	// (because monitored: teachers can see what's going on)
 
-	addDisco: function(aid, number, deltaTime)
+	addDisco: function(eid, number, deltaTime)
 	{
-		db.assessments.update(
+		db.evaluations.update(
 			{
-				_id: aid,
+				_id: eid,
 				"papers.number": number,
 			},
 			{ $inc: {
@@ -174,21 +174,21 @@ const AssessmentModel =
 		);
 	},
 
-	setDiscoTime: function(aid, number)
+	setDiscoTime: function(eid, number)
 	{
-		db.assessments.update(
+		db.evaluations.update(
 			{
-				_id: aid,
+				_id: eid,
 				"papers.number": number,
 			},
 			{ $set: { "papers.$.discoTime": Date.now() } }
 		);
 	},
 
-	getDiscoTime: function(aid, number, cb)
+	getDiscoTime: function(eid, number, cb)
 	{
-		db.assessments.findOne(
-			{ _id: aid },
+		db.evaluations.findOne(
+			{ _id: eid },
 			(err,a) => {
 				if (!!err)
 					return cb(err, null);
@@ -198,11 +198,11 @@ const AssessmentModel =
 		);
 	},
 
-	hasInput: function(aid, number, password, idx, cb)
+	hasInput: function(eid, number, password, idx, cb)
 	{
-		db.assessments.findOne(
+		db.evaluations.findOne(
 			{
-				_id: aid,
+				_id: eid,
 				"papers.number": number,
 				"papers.password": password,
 			},
@@ -221,11 +221,11 @@ const AssessmentModel =
 	},
 
 	// https://stackoverflow.com/questions/27874469/mongodb-push-in-nested-array
-	setInput: function(aid, number, password, input, callback) //input: index + arrayOfInt (or txt)
+	setInput: function(eid, number, password, input, callback) //input: index + arrayOfInt (or txt)
 	{
-		db.assessments.update(
+		db.evaluations.update(
 			{
-				_id: aid,
+				_id: eid,
 				"papers.number": number,
 				"papers.password": password,
 			},
@@ -234,11 +234,11 @@ const AssessmentModel =
 		);
 	},
 
-	endAssessment: function(aid, number, password, callback)
+	endEvaluation: function(eid, number, password, callback)
 	{
-		db.assessments.update(
+		db.evaluations.update(
 			{
-				_id: aid,
+				_id: eid,
 				"papers.number": number,
 				"papers.password": password,
 			},
@@ -250,17 +250,17 @@ const AssessmentModel =
 		);
 	},
 
-	remove: function(aid, cb)
+	remove: function(eid, cb)
 	{
-		db.assessments.remove(
-			{ _id: aid },
+		db.evaluations.remove(
+			{ _id: eid },
 			cb
 		);
 	},
 
 	removeGroup: function(cid, cb)
 	{
-		db.assessments.remove(
+		db.evaluations.remove(
 			{ cid: cid },
 			cb
 		);
@@ -277,24 +277,24 @@ const AssessmentModel =
 			CourseModel.getByPath(user._id, code, (err2,course) => {
 				if (!!err2 || !course)
 					return cb(err2 || {errmsg: "Course not found"});
-				AssessmentModel.getByPath(course._id, name, (err3,assessment) => {
-					if (!!err3 || !assessment)
-						return cb(err3 || {errmsg: "Assessment not found"});
-					cb(null,assessment);
+				EvaluationModel.getByPath(course._id, name, (err3,evaluation) => {
+					if (!!err3 || !evaluation)
+						return cb(err3 || {errmsg: "Evaluation not found"});
+					cb(null,evaluation);
 				});
 			});
 		});
 	},
 
-	checkPassword: function(aid, number, password, cb)
+	checkPassword: function(eid, number, password, cb)
 	{
-		AssessmentModel.getById(aid, (err,assessment) => {
-			if (!!err || !assessment)
-				return cb(err, assessment);
-			const paperIdx = assessment.papers.findIndex( item => { return item.number == number; });
+		EvaluationModel.getById(eid, (err,evaluation) => {
+			if (!!err || !evaluation)
+				return cb(err, evaluation);
+			const paperIdx = evaluation.papers.findIndex( item => { return item.number == number; });
 			if (paperIdx === -1)
 				return cb({errmsg: "Paper not found"}, false);
-			cb(null, assessment.papers[paperIdx].password == password);
+			cb(null, evaluation.papers[paperIdx].password == password);
 		});
 	},
 
@@ -306,35 +306,35 @@ const AssessmentModel =
 				return cb({errmsg: "Course retrieval failure"});
 			if (!course.uid.equals(uid))
 				return cb({errmsg:"Not your course"},undefined);
-			// 2) Insert new blank assessment
-			AssessmentModel.insert(cid, name, cb);
+			// 2) Insert new blank evaluation
+			EvaluationModel.insert(cid, name, cb);
 		});
 	},
 
-	update: function(uid, assessment, cb)
+	update: function(uid, evaluation, cb)
 	{
-		const aid = ObjectId(assessment._id);
-		// 1) Check that assessment is owned by user of ID uid
-		AssessmentModel.getById(aid, (err,assessmentOld) => {
-			if (!!err || !assessmentOld)
-				return cb({errmsg: "Assessment retrieval failure"});
-			CourseModel.getById(ObjectId(assessmentOld.cid), (err2,course) => {
+		const eid = ObjectId(evaluation._id);
+		// 1) Check that evaluation is owned by user of ID uid
+		EvaluationModel.getById(eid, (err,evaluationOld) => {
+			if (!!err || !evaluationOld)
+				return cb({errmsg: "Evaluation retrieval failure"});
+			CourseModel.getById(ObjectId(evaluationOld.cid), (err2,course) => {
 				if (!!err2 || !course)
 					return cb({errmsg: "Course retrieval failure"});
 				if (!course.uid.equals(uid))
 					return cb({errmsg:"Not your course"},undefined);
-				// 2) Replace assessment
-				delete assessment["_id"];
-				assessment.cid = ObjectId(assessment.cid);
-				AssessmentModel.replace(aid, assessment, cb);
+				// 2) Replace evaluation
+				delete evaluation["_id"];
+				evaluation.cid = ObjectId(evaluation.cid);
+				EvaluationModel.replace(eid, evaluation, cb);
 			});
 		});
 	},
 
 	// Set password in responses collection
-	startSession: function(aid, number, password, cb)
+	startSession: function(eid, number, password, cb)
 	{
-		AssessmentModel.getPaperByNumber(aid, number, (err,paper) => {
+		EvaluationModel.getPaperByNumber(eid, number, (err,paper) => {
 			if (!!err)
 				return cb(err,null);
 			if (!paper && !!password)
@@ -346,14 +346,14 @@ const AssessmentModel =
 				if (paper.password != password)
 					return cb({errmsg: "Wrong password"});
 			}
-			AssessmentModel.getQuestions(aid, (err2,questions) => {
+			EvaluationModel.getQuestions(eid, (err2,questions) => {
 				if (!!err2)
 					return cb(err2,null);
 				if (!!paper)
 					return cb(null,{paper:paper});
 				const pwd = TokenGen.generate(12); //arbitrary number, 12 seems enough...
-				db.assessments.update(
-					{ _id: aid },
+				db.evaluations.update(
+					{ _id: eid },
 					{ $push: { papers: {
 						number: number,
 						startTime: Date.now(),
@@ -370,15 +370,15 @@ const AssessmentModel =
 		});
 	},
 
-	newAnswer: function(aid, number, password, input, cb)
+	newAnswer: function(eid, number, password, input, cb)
 	{
 		// Check that student hasn't already answered
-		AssessmentModel.hasInput(aid, number, password, input.index, (err,ret) => {
+		EvaluationModel.hasInput(eid, number, password, input.index, (err,ret) => {
 			if (!!err)
 				return cb(err,null);
 			if (!!ret)
 				return cb({errmsg:"Question already answered"},null);
-			AssessmentModel.setInput(aid, number, password, input, (err2,ret2) => {
+			EvaluationModel.setInput(eid, number, password, input, (err2,ret2) => {
 				if (!!err2 || !ret2)
 					return cb(err2,ret2);
 				return cb(null,ret2);
@@ -388,14 +388,14 @@ const AssessmentModel =
 
 	// NOTE: no callbacks for next function, failures are not so important
 	// (because monitored: teachers can see what's going on)
-	newConnection: function(aid, number)
+	newConnection: function(eid, number)
 	{
 		//increment discoCount, reset discoTime to NULL, update totalDisco
-		AssessmentModel.getDiscoTime(aid, number, (err,discoTime) => {
+		EvaluationModel.getDiscoTime(eid, number, (err,discoTime) => {
 			if (!!discoTime)
-				AssessmentModel.addDisco(aid, number, Date.now() - discoTime);
+				EvaluationModel.addDisco(eid, number, Date.now() - discoTime);
 		});
 	},
 }
 
-module.exports = AssessmentModel;
+module.exports = EvaluationModel;

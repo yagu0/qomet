@@ -6,8 +6,8 @@
 // courses
 //   unique (code,uid)
 //   index (code,uid)
-// assessments
+// evaluations
 //   unique (cid, name)
 //   index (cid, name)
-// db.assessments.createIndex( { cid: 1, name: 1 } );
+// db.evaluations.createIndex( { cid: 1, name: 1 } );
 // https://docs.mongodb.com/manual/core/index-compound/

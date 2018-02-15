@@ -27,8 +27,6 @@ As a teacher, first create an account from the upper-left "login" menu.
 Then create a course using the appropriate button in the middle of the screen.
 Finally, create some exams ("new assessment" button). The syntax for a series of questions is described by the following example:
 
-	> Global (HTML) introduction [optional]
-
 	Question 1 text or introduction (optional if there are subquestions)
 
 		Text for question 1.1 (index detected from indentation)

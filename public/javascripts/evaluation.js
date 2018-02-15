@@ -1,6 +1,6 @@
 let socket = null; //monitor answers in real time
 
-if (assessment.mode == "secure" && !checkWindowSize())
+if (evaluation.mode == "secure" && !checkWindowSize())
 	document.location.href= "/fullscreen";
 
 function checkWindowSize()
@@ -13,9 +13,9 @@ function checkWindowSize()
 }
 
 new Vue({
-	el: "#assessment",
+	el: "#evaluation",
 	data: {
-		assessment: assessment,
+		evaluation: evaluation,
 		answers: { }, //filled later with answering parameters
 		student: { }, //filled later (name, password)
 		// Stage 0: unauthenticated (number),
@@ -23,13 +23,13 @@ new Vue({
 		//       2: locked: password set, exam started
 		//       3: completed
 		//       4: show answers
-		remainingTime: assessment.time, //integer or array
-		stage: assessment.mode != "open" ? 0 : 1,
+		remainingTime: evaluation.time, //integer or array
+		stage: evaluation.mode != "open" ? 0 : 1,
 		warnMsg: "",
 	},
 	computed: {
 		countdown: function() {
-			const remainingTime = assessment.display == "one" && _.isArray(assessment.time)
+			const remainingTime = evaluation.display == "one" && _.isArray(evaluation.time)
 				? this.remainingTime[this.answers.index]
 				: this.remainingTime;
 			let seconds = remainingTime % 60;
@@ -39,12 +39,12 @@ new Vue({
 	},
 	mounted: function() {
 		$(".modal").modal();
-		if (["exam","open"].includes(assessment.mode))
+		if (["exam","open"].includes(evaluation.mode))
 			return;
 		window.addEventListener("blur", () => {
 			if (this.stage != 2)
 				return;
-			if (assessment.mode == "secure")
+			if (evaluation.mode == "secure")
 			{
 				this.sendAnswer();
 				document.location.href= "/noblur";
@@ -52,7 +52,7 @@ new Vue({
 			else //"watch" mode
 				socket.emit(message.studentBlur, {number:this.student.number});
 		}, false);
-		if (assessment.mode == "watch")
+		if (evaluation.mode == "watch")
 		{
 			window.addEventListener("focus", () => {
 				if (this.stage != 2)
@@ -63,7 +63,7 @@ new Vue({
 		window.addEventListener("resize", e => {
 			if (this.stage != 2)
 				return;
-			if (assessment.mode == "secure")
+			if (evaluation.mode == "secure")
 			{
 				this.sendAnswer();
 				document.location.href = "/fullscreen";
@@ -94,7 +94,7 @@ new Vue({
 				method: "GET",
 				data: {
 					number: this.student.number,
-					cid: assessment.cid,
+					cid: evaluation.cid,
 				},
 				dataType: "json",
 				success: s => {
@@ -111,7 +111,7 @@ new Vue({
 			this.stage = 0;
 		},
 		// stage 1 --> 2 (get all questions, set password)
-		startAssessment: function() {
+		startEvaluation: function() {
 			let initializeStage2 = paper => {
 				$("#leftButton, #rightButton").hide();
 				// Initialize structured answer(s) based on questions type and nesting (TODO: more general)
@@ -121,21 +121,21 @@ new Vue({
 				
 				
 				if (!!questions)
-					assessment.questions = questions;
+					evaluation.questions = questions;
 				this.answers.inputs = [ ];
-				for (let q of assessment.questions)
+				for (let q of evaluation.questions)
 					this.answers.inputs.push( _(q.options.length).times( _.constant(false) ) );
 				if (!paper)
 				{
-					this.answers.indices = assessment.fixed
-						? _.range(assessment.questions.length)
-						: _.shuffle( _.range(assessment.questions.length) );
+					this.answers.indices = evaluation.fixed
+						? _.range(evaluation.questions.length)
+						: _.shuffle( _.range(evaluation.questions.length) );
 				}
 				else
 				{
 					// Resuming
 					let indices = paper.inputs.map( input => { return input.index; });
-					let remainingIndices = _.difference( _.range(assessment.questions.length).map(String), indices );
+					let remainingIndices = _.difference( _.range(evaluation.questions.length).map(String), indices );
 					this.answers.indices = indices.concat( _.shuffle(remainingIndices) );
 				}
 
@@ -145,29 +145,29 @@ new Vue({
 
 
 
-				if (assessment.time > 0)
+				if (evaluation.time > 0)
 				{
 
 // TODO: distinguish total exam time AND question time
 
 					const deltaTime = !!paper ? Date.now() - paper.startTime : 0;
-					this.remainingTime = assessment.time * 60 - Math.round(deltaTime / 1000);
+					this.remainingTime = evaluation.time * 60 - Math.round(deltaTime / 1000);
 					this.runTimer();
 				}
 
 
 				this.answers.index = !!paper ? paper.inputs.length : 0;
-				this.answers.displayAll = assessment.display == "all";
+				this.answers.displayAll = evaluation.display == "all";
 				this.answers.showSolution = false;
 				this.stage = 2;
 			};
-			if (assessment.mode == "open")
+			if (evaluation.mode == "open")
 				return initializeStage2();
-			$.ajax("/assessments/start", {
+			$.ajax("/evaluations/start", {
 				method: "PUT",
 				data: {
 					number: this.student.number,
-					aid: assessment._id
+					aid: evaluation._id
 				},
 				dataType: "json",
 				success: s => {
@@ -186,7 +186,7 @@ new Vue({
 						// action (power failure, computer down, ...)
 					}
 					socket = io.connect("/", {
-						query: "aid=" + assessment._id + "&number=" + this.student.number + "&password=" + this.student.password
+						query: "aid=" + evaluation._id + "&number=" + this.student.number + "&password=" + this.student.password
 					});
 					socket.on(message.allAnswers, this.setAnswers);
 					initializeStage2(s.questions, s.paper);
@@ -197,7 +197,7 @@ new Vue({
 
 		// stage 2
 		runGlobalTimer: function() {
-			if (assessment.time <= 0)
+			if (evaluation.time <= 0)
 				return;
 			let self = this;
 			setInterval( function() {
@@ -205,13 +205,13 @@ new Vue({
 				if (self.remainingTime <= 0)
 				{
 					if (self.stage == 2)
-						self.endAssessment();
+						self.endEvaluation();
 					clearInterval(this);
 				}
 			}, 1000);
 		},
 		runQuestionTimer: function(idx) {
-			if (assessment.questions[idx].time <= 0)
+			if (evaluation.questions[idx].time <= 0)
 				return;
 			let self = this; //TODO: question remaining time
 			setInterval( function() {
@@ -219,7 +219,7 @@ new Vue({
 				if (self.remainingTime <= 0)
 				{
 					if (self.stage == 2)
-						self.endAssessment();
+						self.endEvaluation();
 					clearInterval(this);
 				}
 			}, 1000);
@@ -231,16 +231,16 @@ new Vue({
 		sendOneAnswer: function() {
 			const realIndex = this.answers.indices[this.answers.index];
 			let gotoNext = () => {
-				if (this.answers.index == assessment.questions.length - 1)
-					this.endAssessment();
+				if (this.answers.index == evaluation.questions.length - 1)
+					this.endEvaluation();
 				else
 					this.answers.index++;
 				this.$children[0].$forceUpdate(); //TODO: bad HACK, and shouldn't be required...
 			};
-			if (assessment.mode == "open")
+			if (evaluation.mode == "open")
 				return gotoNext(); //only local
 			let answerData = {
-				aid: assessment._id,
+				aid: evaluation._id,
 				answer: JSON.stringify({
 					index: realIndex.toString(),
 					input: this.answers.inputs[realIndex]
@@ -251,7 +251,7 @@ new Vue({
 				number: this.student.number,
 				password: this.student.password,
 			};
-			$.ajax("/assessments/answer", {
+			$.ajax("/evaluations/answer", {
 				method: "PUT",
 				data: answerData,
 				dataType: "json",
@@ -265,27 +265,27 @@ new Vue({
 		},
 		// TODO: I don't like that + sending should not be definitive in exam mode with display = all
 		sendAnswer: function() {
-			if (assessment.display == "one")
+			if (evaluation.display == "one")
 				this.sendOneAnswer();
 			else
-				assessment.questions.forEach(this.sendOneAnswer);
+				evaluation.questions.forEach(this.sendOneAnswer);
 		},
 		// stage 2 --> 3 (or 4)
 		// from a message by statements component, or time over
-		endAssessment: function() {
+		endEvaluation: function() {
 			// Set endTime, destroy password
 			$("#leftButton, #rightButton").show();
-			if (assessment.mode == "open")
+			if (evaluation.mode == "open")
 			{
 				this.stage = 4;
 				this.answers.showSolution = true;
 				this.answers.displayAll = true;
 				return;
 			}
-			$.ajax("/assessments/end", {
+			$.ajax("/evaluations/end", {
 				method: "PUT",
 				data: {
-					aid: assessment._id,
+					aid: evaluation._id,
 					number: this.student.number,
 					password: this.student.password,
 				},
@@ -302,7 +302,7 @@ new Vue({
 		setAnswers: function(m) {
 			const answers = JSON.parse(m.answers);
 			for (let i=0; i<answers.length; i++)
-				assessment.questions[i].answer = answers[i];
+				evaluation.questions[i].answer = answers[i];
 			this.answers.showSolution = true;
 			this.answers.displayAll = true;
 			this.stage = 4;

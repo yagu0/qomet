@@ -3,7 +3,7 @@
 new Vue({
 	el: '#grade',
 	data: {
-		assessmentArray: assessmentArray,
+		evaluationArray: evaluationArray,
 		settings: {
 			totalPoints: 20,
 			halfPoints: false,
@@ -29,16 +29,16 @@ new Vue({
 				let gradesCount = 0;
 				if (!!this.grades[s.number])
 				{
-					Object.keys(this.grades[s.number]).forEach( assessmentName => {
-						s[assessmentName] = this.grades[s.number][assessmentName];
-						if (_.isNumeric(s[assessmentName]) && !isNaN(s[assessmentName]))
+					Object.keys(this.grades[s.number]).forEach( evaluationName => {
+						s[evaluationName] = this.grades[s.number][evaluationName];
+						if (_.isNumeric(s[evaluationName]) && !isNaN(s[evaluationName]))
 						{
-							finalGrade += s[assessmentName];
+							finalGrade += s[evaluationName];
 							gradesCount++;
 						}
 						if (gradesCount >= 1)
 							finalGrade /= gradesCount;
-						s["final"] = finalGrade; //TODO: forbid "final" as assessment name
+						s["final"] = finalGrade; //TODO: forbid "final" as evaluation name
 					});
 				}
 				data.push(s); //number,name,group,assessName1...assessNameN,final
@@ -65,10 +65,10 @@ new Vue({
 			});
 			return _.range(1,maxGrp+1);
 		},
-		grade: function(assessmentIndex, studentNumber) {
-			if (!this.grades[assessmentIndex] || !this.grades[assessmentIndex][studentNumber])
+		grade: function(evaluationIndex, studentNumber) {
+			if (!this.grades[evaluationIndex] || !this.grades[evaluationIndex][studentNumber])
 				return ""; //no grade yet
-			return this.grades[assessmentIndex][studentNumber];
+			return this.grades[evaluationIndex][studentNumber];
 		},
 		groupId: function(group, prefix) {
 			return (prefix || "") + "group" + group;

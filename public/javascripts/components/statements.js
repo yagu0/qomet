@@ -15,6 +15,8 @@ Imaginary example: (using math.js)
 	$$\begin{matrix}7 & x\\y & -3\end{matrix}$$</div>
 	* ...
 
++ fixed + question time (syntax ?)
+
 --> input of type text (number, or vector, or matrix e.g. in R syntax)
 --> parameter stored in question.param (TODO)
 
@@ -91,8 +93,8 @@ Vue.component("statements", {
 								"input",
 								{
 									domProps: {
-										checked: this.inputs[q.index][idx],
-										disabled: monitoring,
+										checked: !!this.inputs && this.inputs[q.index][idx],
+										disabled: monitoring || this.display == "solution",
 									},
 									attrs: {
 										id: this.inputId(q.index,idx),
@@ -125,7 +127,7 @@ Vue.component("statements", {
 									"class": {
 										option: true,
 										choiceCorrect: this.display == "solution" && q.answer.includes(idx),
-										choiceWrong: this.display == "solution" && this.inputs[q.index][idx] && !q.answer.includes(idx),
+										choiceWrong: this.display == "solution" && !!this.inputs && this.inputs[q.index][idx] && !q.answer.includes(idx),
 									},
 								},
 								option

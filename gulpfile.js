@@ -9,8 +9,6 @@ var nodemonOptions = {
 	watch: ['./','config','utils','routes','models','entities']
 };
 
-// TODO: tasks for uglify / sass / use webpack
-
 gulp.task('server', function () {
 	nodemon(nodemonOptions)
 	.on('restart', function () {
