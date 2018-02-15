@@ -8,10 +8,12 @@ Validator.Question = {
 	"wording": "string",
 	"options": "stringArray", //only for quiz
 	"fixed": "boolean",
-	"answer": "string", //both this and next are mutually exclusive
-	"choice": "integerArray",
-	"active": "boolean",
 	"points": "number",
+};
+
+Validator.Answer = {
+	"index": "section",
+	"value": "stringOrIntegerArray",
 };
 
 Validator.Input = {
@@ -22,10 +24,9 @@ Validator.Input = {
 // One student response to an exam
 Validator.Paper = {
 	"number": "code",
-	// (array of) strings for open questions, arrays of integers for quizzes:
 	"inputs": Validator.Input,
 	"startTime": "positiveInteger",
-	"endTime": "positiveInteger",
+	"current": "positiveInteger",
 	"discoTime": "positiveInteger",
 	"discoCount": "positiveInteger",
 	"totalDisco": "positiveInteger",
@@ -44,6 +45,7 @@ Validator.Evaluation = {
 	"introduction": "string",
 	"coefficient": "number",
 	"questions": Validator.Question,
+	"answers": Validator.Answer,
 	"papers": Validator.Paper,
 };
 
@@ -51,10 +53,9 @@ Validator.User = {
 	"_id": "bson",
 	"email": "email",
 	"name": "name",
-	"initials": "unchecked", //not a user input
-	"loginToken": "unchecked",
-	"sessionTokens": "unchecked",
-	"token": "alphanumeric", //exception: for the purpose of user registration
+	"initials": "alphanumeric",
+	"loginToken": "alphanumeric",
+	"sessionTokens": "alphanumericArray",
 };
 
 Validator.Student = {
@@ -121,11 +122,6 @@ Object.assign(Validator,
 		if (!/^[0-9.]+$/.test(arg))
 			return "digits and dot only";
 		return "";
-	},
-
-	"check_stringArray": function(arg)
-	{
-		return !_.isArray(arg) ? "not an array" : "";
 	},
 
 	"check_alphanumeric": function(arg)
@@ -203,7 +199,7 @@ Object.assign(Validator,
 		if (!_.isString(arg))
 			return "not a string";
 		if (!/^[\x21-\x7E]{1,16}$/.test(arg))
-			return "[1,16] ASCII characters with code in [33,126]";
+			return "{1,16} ASCII characters with code in [33,126]";
 		return "";
 	},
 
@@ -230,6 +226,31 @@ Object.assign(Validator,
 		return "";
 	},
 
+	"check_stringArray": function(arg)
+	{
+		if (!_.isArray(arg))
+			return "not an array";
+		for (let i=0; i<arg.length; i++)
+		{
+			if (!_.isString(arg[i]));
+				return "not a string";
+		}
+		return "";
+	},
+
+	"check_alphanumericArray": function(arg)
+	{
+		if (!_.isArray(arg))
+			return "not an array";
+		for (let i=0; i<arg.length; i++)
+		{
+			let error = Validator["check_alphanumeric"](arg[i]);
+			if (error.length > 0)
+				return error;
+		}
+		return "";
+	},
+
 	"check_stringOrIntegerArray": function(arg)
 	{
 		if (!_.isString(arg))
@@ -238,4 +259,4 @@ Object.assign(Validator,
 	},
 });
 
-try { module.exports = Validator.checkObject; } catch (err) {} //for server
+try { module.exports = Validator.checkObject; } catch (err) { } //for server

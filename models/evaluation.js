@@ -20,13 +20,15 @@ const EvaluationModel =
 	 *   coefficient: number, default 1
 	 *   questions: array of
 	 *     index: for paper test, like 2.1.a (?!); and quiz: 0, 1, 2, 3...
-	 *     wording: varchar (HTML)
+	 *     wording: varchar (HTML) with potential placeholders for params
 	 *     options: array of varchar --> if present, question type == quiz!
 	 *     fixed: bool, options in fixed order (default: false)
-	 *     answer: array of integers (for quiz) or html text (for paper); striped in exam mode
-	 *     active: boolean, is question in current evaluation?
 	 *     points: points for this question (default 1)
-	 *     param: parameter (if applicable)
+	 *   answers:
+	 *     array of index +
+	 *       array of integers (for quiz) or
+	 *       html text (for paper) or
+	 *       function (as string, for parameterized questions)
 	 *   papers : array of
 	 *     number: student number
 	 *     inputs: array of {index,answer[array of integers or html text],startTime}
@@ -73,6 +75,7 @@ const EvaluationModel =
 				introduction: "",
 				coefficient: 1,
 				questions: [ ],
+				answers: [ ],
 				papers: [ ],
 			},
 			callback
@@ -243,7 +246,6 @@ const EvaluationModel =
 				"papers.password": password,
 			},
 			{ $set: {
-				"papers.$.endTime": Date.now(),
 				"papers.$.password": "",
 			} },
 			callback
@@ -357,7 +359,6 @@ const EvaluationModel =
 					{ $push: { papers: {
 						number: number,
 						startTime: Date.now(),
-						endTime: undefined,
 						password: password,
 						totalDisco: 0,
 						discoCount: 0,

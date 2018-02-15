@@ -1,4 +1,5 @@
 /*Draft format (compiled to json)
+ * TODO: separate questions and answers in Evaluation object
 
 <some html question (or/+ exercise intro)>
 
@@ -13,19 +14,26 @@
 		+ choix 3
 		- choix4
 
-		<another sub sub>
+		<another sub sub> with params interpolation £ (tout simplement)
+		/ params: javascript parameter generator (another function, body only)
 		* answer 2 (which can
 		be on
 		several lines)
 
 <Some second question>
 * With answer
-*/
+
+	dans le cas de parametetrized, answer est une fonction javascript !! qui prend en arg le(s) param(s)
+	coté serveur on stock parameterized question + body func
+	une fois côté client, extra work first to 1) execute each func 2) replace (and store!!!) all params
+https://stackoverflow.com/questions/7650071/is-there-a-way-to-create-a-function-from-a-string-with-javascript
+
+	*/
 
 new Vue({
 	el: '#course',
 	data: {
-		display: "evaluations", //or "students", or "grades" (admin mode)
+		display: "evaluations", //or "students" (in admin mode)
 		course: course,
 		monitorPwd: "",
 		newEvaluation: { name: "" },

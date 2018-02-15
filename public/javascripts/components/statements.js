@@ -26,10 +26,11 @@ Vue.component("statements", {
 	// 'inputs': object with key = question index and value = text or boolean array
 	// display: 'all', 'one', 'solution'
 	// iidx: current level-0 integer index (can match a group of questions / inputs)
-	props: ['questions','inputs','display','iidx'],
+	props: ['questions','inputs','answers','display','iidx'],
 	data: function() {
 		return {
 			displayStyle: "compact", //or "all": all on same page
+			parameters: 0, //TODO: DO NOT re-draw parameters for already answered questions
 		};
 	}
 	// Full questions tree is rendered, but some parts hidden depending on display settings
@@ -120,14 +121,15 @@ Vue.component("statements", {
 								}
 							)
 						);
+						const aIdx = (this.answers || [ ]).findIndex( item => { return item.index == q.index; });
 						optionList.push(
 							h(
 								"div",
 								{
 									"class": {
 										option: true,
-										choiceCorrect: this.display == "solution" && q.answer.includes(idx),
-										choiceWrong: this.display == "solution" && !!this.inputs && this.inputs[q.index][idx] && !q.answer.includes(idx),
+										choiceCorrect: this.display == "solution" && this.answers[aIdx].includes(idx),
+										choiceWrong: this.display == "solution" && !!this.inputs && this.inputs[q.index][idx] && !this.answers[aIdx].includes(idx),
 									},
 								},
 								option
@@ -145,6 +147,10 @@ Vue.component("statements", {
 							optionList
 						)
 					);
+				}
+				else
+				{
+					// Open question, or parameterized: TODO
 				}
 				const depth = (q.index.match(/\./g) || []).length;
 				return h(
