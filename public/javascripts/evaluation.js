@@ -55,9 +55,8 @@ new Vue({
 		if (evaluation.mode == "watch")
 		{
 			window.addEventListener("focus", () => {
-				if (this.stage != 2)
-					return;
-				socket.emit(message.studentFocus, {number:this.student.number});
+				if (this.stage == 2)
+					socket.emit(message.studentFocus, {number:this.student.number});
 			}, false);
 		}
 		window.addEventListener("resize", e => {
