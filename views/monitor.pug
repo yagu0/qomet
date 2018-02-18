@@ -16,7 +16,7 @@ block content
 							input#password(type="password" v-model="password" @keyup.enter="startMonitoring()")
 						button.waves-effect.waves-light.btn(@click="startMonitoring()") Send
 				#stage1(v-show="stage==1")
-					button.waves-effect.waves-light.btn(@click="endMonitoring()" :disabled="!allFinished()") Send feedback
+					button.waves-effect.waves-light.btn(@click="endMonitoring()") Send feedback
 					h4.title(@click="toggleDisplay('answers')") Anwers
 					// TODO: aussi afficher stats, permettre tri par colonnes
 					.card(v-show="display=='answers'")
@@ -31,8 +31,8 @@ block content
 									th Name
 									th(v-for="(q,i) in evaluation.questions") Q.{{ (i+1) }}
 							tbody
-								tr.evaluation(v-for="s in studentList(group)" :class="{absent:!s.present}")
-									td(:class="{blur:!!s.blur,resize:!!s.resize,disconnect:!!s.disco}" @click="togglePresence(s)") {{ s.name }}
+								tr.evaluation(v-for="s in studentList(group)")
+									td(:class="{blur:!!s.blur,resize:!!s.resize,disconnect:!!s.disco}") {{ s.name }}
 									td(v-for="(q,i) in evaluation.questions" :style="{backgroundColor: getColor(s.number,i)}" @click="seeDetails(s.number,i)") &nbsp;
 					h4.title(@click="toggleDisplay('evaluation')") evaluation
 					div(v-show="display=='evaluation'")
