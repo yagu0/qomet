@@ -14,6 +14,7 @@ new Vue({
 	},
 	mounted: function() {
 		// TODO
+		$('ul.tabs').tabs(); //--> migrate to grade.js
 	},
 	methods: {
 		// GRADES:

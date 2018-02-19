@@ -32,7 +32,7 @@ Vue.component("statements", {
 			displayStyle: "compact", //or "all": all on same page
 			parameters: 0, //TODO: DO NOT re-draw parameters for already answered questions
 		};
-	}
+	},
 	// Full questions tree is rendered, but some parts hidden depending on display settings
 	render(h) {
 		// Prepare questions groups, ordered
@@ -158,7 +158,7 @@ Vue.component("statements", {
 					{
 						"class": {
 							"question": true,
-							"depth" + depth: true,
+							["depth" + depth]: true,
 						},
 					},
 					questionContent
@@ -171,7 +171,7 @@ Vue.component("statements", {
 						"questionGroup": true,
 						"hide": this.display == "one" && this.iidx != i,
 					},
-				}
+				},
 				qgDom
 			);
 		});

@@ -7,9 +7,9 @@ block append stylesheets
 block content
 	.container#course
 		if teacher
-			#newevaluation.modal
+			#newEvaluation.modal
 				.modal-content
-					form(@submit.prevent="addevaluation")
+					form(@submit.prevent="addEvaluation")
 						.input-field
 							input#evaluationName(type="text" v-model="newEvaluation.name" required)
 							label(for="evaluationName") Name
@@ -38,11 +38,11 @@ block content
 									td {{ student.group }}
 		.row
 			.col.s12.m10.offset-m1
-				h4.title(@click="toggleDisplay('evaluations')") evaluations
+				h4.title(@click="toggleDisplay('evaluations')") Evaluations
 				.card(v-show="display=='evaluations'")
 					if teacher
 						.center-align
-							a.on-left.waves-effect.waves-light.btn.modal-trigger(href="#newevaluation") New evaluation
+							a.on-left.waves-effect.waves-light.btn.modal-trigger(href="#newEvaluation") New evaluation
 							input#password(type="password" v-model="monitorPwd" @keyup.enter="setPassword"
 									placeholder="Password" title="Monitoring password")
 					table
@@ -53,7 +53,7 @@ block content
 								th #Questions
 						tbody
 							tr.evaluation(v-for="(evaluation,i) in evaluationArray" :class="{idle:!evaluation.active}"
-									@click.left="actionevaluation(i)" @contextmenu.prevent="deleteevaluation(evaluation)")
+									@click.left="actionEvaluation(i)" @contextmenu.prevent="deleteEvaluation(evaluation)")
 								td {{ evaluation.name }}
 								td {{ evaluation.mode }}
 								td {{ evaluation.questions.length }}

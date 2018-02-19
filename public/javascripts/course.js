@@ -44,23 +44,8 @@ new Vue({
 		questionsText: "", //questions in an evaluation, in text format
 	},
 	mounted: function() {
-		
-		
-		
-		$('.modal').each( (i,elem) => {
-			if (elem.id != "evaluationEdit")
-				$(elem).modal();
-		});
-		$('ul.tabs').tabs(); //--> migrate to grade.js
-		
-		
-		
-		$('#evaluationEdit').modal({
-			complete: () => {
-				this.parseEvaluation();
-				Vue.nextTick(statementsLibsRefresh);
-			},
-		});
+		$('.modal').modal();
+		Materialize.updateTextFields(); //textareas, time field...
 	},
 	methods: {
 		// GENERAL:
@@ -144,10 +129,6 @@ new Vue({
 					},
 				}
 			);
-		},
-		materialOpenModal: function(id) {
-			$("#" + id).modal("open");
-			Materialize.updateTextFields(); //textareas, time field...
 		},
 		updateEvaluation: function() {
 			$.ajax("/evaluations", {

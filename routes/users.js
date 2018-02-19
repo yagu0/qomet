@@ -19,7 +19,7 @@ function setAndSendLoginToken(subject, to, res)
 				subject: subject,
 				body: "Hello " + to.initials + "!\n" +
 					"Access your account here: " +
-					params.siteURL + "/authenticate?token=" + token + "\\n" +
+					params.siteURL + "/authenticate/" + token + "\\n" +
 					"Token will expire in " + params.token.expire/(1000*60) + " minutes."
 			}, err => {
 				res.json(err || {});
@@ -30,8 +30,8 @@ function setAndSendLoginToken(subject, to, res)
 
 router.post('/register', access.ajax, access.unlogged, (req,res) => {
 	const newUser = {
-		email: req.body.email,
-		name: req.body.name,
+		email: decodeURIComponent(req.body.email),
+		name: decodeURIComponent(req.body.name),
 	};
 	let error = validator(newUser, "User");
 	if (error.length > 0)
@@ -52,7 +52,7 @@ router.post('/register', access.ajax, access.unlogged, (req,res) => {
 
 // Login:
 router.put('/sendtoken', access.ajax, access.unlogged, (req,res) => {
-	const email = req.body.email;
+	const email = decodeURIComponent(req.body.email);
 	let error = validator({email:email}, "User");
 	if (error.length > 0)
 		return res.json({errmsg:error});
@@ -65,7 +65,7 @@ router.put('/sendtoken', access.ajax, access.unlogged, (req,res) => {
 });
 
 // Authentication process, optionally with email changing:
-router.put('/authenticate/:token([a-z0-9]+)', access.unlogged, (req,res) => {
+router.get('/authenticate/:token([a-z0-9]+)', access.unlogged, (req,res) => {
 	const loginToken = req.params.token;
 	UserModel.getByLoginToken(loginToken, (err,user) => {
 		access.checkRequest(res, err, user, "Invalid token", () => {
@@ -96,7 +96,7 @@ router.put('/authenticate/:token([a-z0-9]+)', access.unlogged, (req,res) => {
 	});
 });
 
-router.put('/logout', access.logged, (req,res) => {
+router.get('/logout', access.logged, (req,res) => {
 	UserModel.removeToken(req.user._id, req.cookies.token, (err,ret) => {
 		access.checkRequest(res, err, ret, "Logout failed", () => {
 			res.clearCookie("initials");
