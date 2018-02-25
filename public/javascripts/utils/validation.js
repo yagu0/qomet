@@ -1,4 +1,4 @@
-try { var _ = require("underscore"); } catch (err) {} //for server
+try { var _ = require("underscore"); } catch (err) { } //for server
 
 let Validator = { };
 
@@ -82,8 +82,6 @@ Object.assign(Validator,
 		{
 			if (!model[key])
 				return "Unknown field";
-			if (model[key] == "unchecked") //not a user input (ignored)
-				continue;
 			if (_.isObject(model[key]))
 			{
 				// TODO: next loop seems too heavy... (only a concern if big class import?)
@@ -112,6 +110,8 @@ Object.assign(Validator,
 
 	"check_string": function(arg)
 	{
+		if (!_.isString(arg))
+			return "not a string";
 		return ""; //strings are unchecked, but sanitized
 	},
 

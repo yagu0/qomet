@@ -87,6 +87,10 @@ would be to force e.g. chromium in kiosk mode restricted to one domain (using SE
   Too big for my purpose; however qomet might be re-thought as a moodle plugin
   (although [at least one](https://moodle.org/plugins/mod_exam) already exists for this task).
 
+ * [nbgrader](http://nbgrader.readthedocs.io/en/stable/)<br/>
+  Assignment module for Jupyter, auto-grading closed and coding questions while providing a feedback to the students.
+  It looks great, but at least for the moment lacks the real-time review (for the teacher).
+
  * [evalbox](https://evalbox.com/)<br/>
   The closest to my goals, but only for simple quizzes, and not actively developed anymore.
 

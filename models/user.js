@@ -105,11 +105,10 @@ const UserModel =
 		db.users.update(
 			{ _id: uid },
 			{ $set: { loginToken: {
-					value: token,
-					timestamp: new Date().getTime(),
-					ip: ip,
-				}}
-			},
+				value: token,
+				timestamp: new Date().getTime(),
+				ip: ip,
+			} } },
 			cb
 		);
 	},
