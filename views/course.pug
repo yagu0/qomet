@@ -18,7 +18,7 @@ block content
 						a.waves-effect.waves-light.btn(href="#!" @click="addEvaluation()")
 							span Submit
 							i.material-icons.right send
-			.row
+			.row(style="margin-bottom:0")
 				.col.s12.m10.offset-m1
 					h4.title(@click="toggleDisplay('students')") Students
 					.card(v-show="display=='students'")
@@ -36,7 +36,7 @@ block content
 									td {{ student.number }}
 									td {{ student.name }}
 									td {{ student.group }}
-		.row
+		.row(style="margin-bottom:0")
 			.col.s12.m10.offset-m1
 				h4.title(@click="toggleDisplay('evaluations')") Evaluations
 				.card(v-show="display=='evaluations'")
@@ -57,59 +57,58 @@ block content
 								td {{ evaluation.name }}
 								td {{ evaluation.mode }}
 								td {{ evaluation.questions.length }}
-		if teacher
-			.row
-				.col.s12.m10.offset-m1
-					h4 {{ evaluation.name }}
-					.card(v-show="mode=='view'")
-						.center-align
-							button.waves-effect.waves-light.btn.on-left(@click="mode='edit'") Edit
-							button.waves-effect.waves-light.btn(@click="redirect(evaluation.name)") View
-						div
-							.introduction(v-html="evaluation.introduction")
-							statements(:questions="evaluation.questions" :display="solution")
-					.card(v-show="mode=='edit'")
-						form(@submit.prevent)
-							p
-								input#active(type="checkbox" v-model="evaluation.active")
-								label(for="active") evaluation is active
-							div
-								h4 Questions mode:
-								span(title="Exam mode, secured (class only): students cannot lose focus or exit fullscreen")
-									input#secure(name="status" type="radio" value="secure" v-model="evaluation.mode")
-									label(for="secure") secure
-								span(title="Exam mode, watched (class only): teachers are notified when students lose focus or resize window")
-									input#watch(name="status" type="radio" value="watch" v-model="evaluation.mode")
-									label(for="watch") watch
-								span(title="Exam mode, unwatched: students can browse the web freely")
-									input#exam(name="status" type="radio" value="exam" v-model="evaluation.mode")
-									label(for="exam") exam
-								span(title="Questions list open to the world (useful mode after an exam, or for a 'questions bank'")
-									input#open(name="status" type="radio" value="open" v-model="evaluation.mode")
-									label(for="open") open
-							p
-								input#fixed(type="checkbox" v-model="evaluation.fixed")
-								label(for="fixed") Fixed questions order
-							div
-								h4 Display type:
-								span(title="Show only one question at a time (with potential sub-questions)")
-									input#displayOne(name="display" type="radio" value="one" v-model="evaluation.display")
-									label(for="displayOne") one
-								span(title="Always show all questions (with an optional navigator)")
-									input#displayAll(name="display" type="radio" value="all" v-model="evaluation.display")
-									label(for="displayAll") all
-							.input-field
-								input#time(type="number" v-model.number="evaluation.time")
-								label(for="time") Time (minutes)
-							.input-field
-								textarea#introduction.materialize-textarea(v-model="evaluation.introduction")
-								label(for="introduction") Introduction
-							.input-field
-								textarea#evaluationEdition.materialize-textarea(v-model="evaluationText")
-								label(for="evaluationEdition") evaluation in text format
-							.center-align
-								button.waves-effect.waves-light.btn.on-left(@click="updateEvaluation()") Send
-								button.waves-effect.waves-light.btn(@click="mode='view'") Cancel
+					if teacher
+						div(v-show="evaluationIndex >= 0")
+							h4 {{ evaluation.name }}
+							.card(v-show="mode=='view'")
+								.center-align
+									button.waves-effect.waves-light.btn.on-left(@click="mode='edit'") Edit
+									button.waves-effect.waves-light.btn(@click="redirect(evaluation.name)") View
+								div
+									.introduction(v-html="evaluation.introduction")
+									statements(:questions="evaluation.questions" :display="'solution'")
+							.card(v-show="mode=='edit'")
+								form(@submit.prevent)
+									p
+										input#active(type="checkbox" v-model="evaluation.active")
+										label(for="active") evaluation is active
+									div
+										h4 Questions mode:
+										span(title="Exam mode, secured (class only): students cannot lose focus or exit fullscreen")
+											input#secure(name="status" type="radio" value="secure" v-model="evaluation.mode")
+											label(for="secure") secure
+										span(title="Exam mode, watched (class only): teachers are notified when students lose focus or resize window")
+											input#watch(name="status" type="radio" value="watch" v-model="evaluation.mode")
+											label(for="watch") watch
+										span(title="Exam mode, unwatched: students can browse the web freely")
+											input#exam(name="status" type="radio" value="exam" v-model="evaluation.mode")
+											label(for="exam") exam
+										span(title="Questions list open to the world (useful mode after an exam, or for a 'questions bank'")
+											input#open(name="status" type="radio" value="open" v-model="evaluation.mode")
+											label(for="open") open
+									p
+										input#fixed(type="checkbox" v-model="evaluation.fixed")
+										label(for="fixed") Fixed questions order
+									div
+										h4 Display type:
+										span(title="Show only one question at a time (with potential sub-questions)")
+											input#displayOne(name="display" type="radio" value="one" v-model="evaluation.display")
+											label(for="displayOne") one
+										span(title="Always show all questions (with an optional navigator)")
+											input#displayAll(name="display" type="radio" value="all" v-model="evaluation.display")
+											label(for="displayAll") all
+									.input-field
+										input#time(type="number" v-model.number="evaluation.time")
+										label(for="time") Time (minutes)
+									.input-field
+										textarea#introduction.materialize-textarea(v-model="evaluation.introduction")
+										label(for="introduction") Introduction
+									.input-field
+										textarea#evaluationEdition.materialize-textarea(v-model="questionsText")
+										label(for="evaluationEdition") evaluation in text format
+									.center-align
+										button.waves-effect.waves-light.btn.on-left(@click="updateEvaluation()") Send
+										button.waves-effect.waves-light.btn(@click="mode='view'") Cancel
 
 block append javascripts
 	script(src="//cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.6/papaparse.min.js")
@@ -120,5 +119,6 @@ block append javascripts
 		const admin = #{teacher};
 	script(src="/javascripts/utils/sha1.js")
 	script(src="/javascripts/utils/validation.js")
+	script(src="/javascripts/utils/libsRefresh.js")
 	script(src="/javascripts/components/statements.js")
 	script(src="/javascripts/course.js")

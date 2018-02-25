@@ -41,7 +41,9 @@ Vue.component("statements", {
 			const dotPos = q.index.indexOf(".");
 			return dotPos === -1 ? q.index : q.index.substring(0,dotPos);
 		});
-		let domTree = questionGroups.map( (qg,i) => {
+		let domTree = Object.keys(questionGroups).map( idx => {
+			let qg = questionGroups[idx];
+			const i = parseInt(idx);
 			// Re-order questions 1.1.1 then 1.1.2 then...
 			const orderedQg = qg.sort( (a,b) => {
 				let aParts = a.split('.').map(Number);

@@ -39,13 +39,13 @@ new Vue({
 		newEvaluation: { name: "" },
 		evaluationArray: evaluationArray,
 		mode: "view", //or "edit" (some evaluation)
-		evaluationIndex: 0, //current edited evaluation index
+		evaluationIndex: -1, //current edited evaluation index
 		evaluation: { }, //copy of evaluation at editing index in array
 		questionsText: "", //questions in an evaluation, in text format
 	},
 	mounted: function() {
 		$('.modal').modal();
-		Materialize.updateTextFields(); //textareas, time field...
+		//Materialize.updateTextFields(); //textareas, time field...
 	},
 	methods: {
 		// GENERAL:
