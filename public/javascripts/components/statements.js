@@ -6,8 +6,8 @@ NOTE: questions can contain parameterized exercises (how ?
 --> write javascript script (OK, users trusted ? ==> safe mode possible if public website)
 Imaginary example: (using math.js)
 	<params> (avant l'exo)
-	const x = math.random()
-	const y = math.random()
+	const x = math.random();
+	const y = math.random();
 	</params>
 	<result>
 	let M = math.matrix([[7, x], [y, -3]]);
