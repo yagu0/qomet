@@ -260,14 +260,6 @@ const EvaluationModel =
 		);
 	},
 
-	removeGroup: function(cid, cb)
-	{
-		db.evaluations.remove(
-			{ cid: cid },
-			cb
-		);
-	},
-
 	/////////////////////
 	// ADVANCED FUNCTIONS
 

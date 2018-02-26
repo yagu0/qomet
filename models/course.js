@@ -1,5 +1,4 @@
 const UserModel = require("../models/user");
-const EvaluationModel = require("../models/evaluation");
 const db = require("../utils/database");
 
 const CourseModel =
@@ -160,12 +159,15 @@ const CourseModel =
 			if (!!err || !course || !course.uid.equals(uid))
 				return cb({errmsg:"Not your course"},{});
 			// 2) remove all associated evaluations
-			EvaluationModel.removeGroup(cid, (err2,ret) => {
-				if (!!err)
-					return cb(err,{});
-				// 3) remove course (with its students)
-				CourseModel.remove(cid, cb);
-			});
+			db.evaluations.remove(
+				{ cid: cid },
+				(err2,ret) => {
+					if (!!err)
+						return cb(err,{});
+					// 3) remove course (with its students)
+					CourseModel.remove(cid, cb);
+				}
+			);
 		});
 	},
 }

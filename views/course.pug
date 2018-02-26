@@ -66,7 +66,7 @@ block content
 									button.waves-effect.waves-light.btn(@click="redirect(evaluation.name)") View
 								div
 									.introduction(v-html="evaluation.introduction")
-									statements(:questions="evaluation.questions" :display="'solution'")
+									statements(:questions="evaluation.questions" :answers="evaluation.answers" :display="'solution'")
 							.card(v-show="mode=='edit'")
 								form(@submit.prevent)
 									p

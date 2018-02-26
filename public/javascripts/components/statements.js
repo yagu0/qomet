@@ -6,13 +6,15 @@ NOTE: questions can contain parameterized exercises (how ?
 --> write javascript script (OK, users trusted ? ==> safe mode possible if public website)
 Imaginary example: (using math.js)
 	<params> (avant l'exo)
-	x: math.random()
-	y: math.random()
-	M: math.matrix([[7, x], [y, -3]]);
-	res: math.det(M)
+	const x = math.random()
+	const y = math.random()
 	</params>
+	<result>
+	let M = math.matrix([[7, x], [y, -3]]);
+	return math.det(M);
+	</result>
 	<div>Calculer le déterminant de 
-	$$\begin{matrix}7 & x\\y & -3\end{matrix}$$</div>
+	$$\begin{matrix}7 & £x£\\£y£ & -3\end{matrix}$$</div>
 	* ...
 
 + fixed + question time (syntax ?)
