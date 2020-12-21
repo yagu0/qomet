@@ -38,7 +38,7 @@ cron.schedule('0 0 0 * * *', function() {
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
-const io = require('socket.io').listen(server);
+const io = require('socket.io')(server);
 
 /*
  * Sockets handling

@@ -8,7 +8,6 @@ block rightMenu
 	a#rightButton.btn-floating.btn-large.grey(href="grade")
 		i.material-icons mode_edit
 
-
 			#gradeSettings.modal
 				.modal-content
 					form(@submit.prevent="computeGrades")
@@ -42,7 +41,6 @@ block rightMenu
 					.center-align
 						a.modal-action.modal-close.waves-effect.waves-light.btn-flat(href="#!") Close
 
-
 block content
 	.container#grading
 		.row
@@ -71,8 +69,6 @@ block content
 					.card
 						statements(:questions="evaluation.questions" :answers:"answers")
 
-
-
 				if teacher
 					h4.title(@click="toggleDisplay('grades')") Grades
 					.card(v-show="display=='grades'")
@@ -99,9 +95,6 @@ block content
 									//td {{ grades[student.number].final }}
 								tr.stats
 									td(colspan="4") Stats: range= stdev= mean=
-
-
-
 
 block append javascripts
 	script.
