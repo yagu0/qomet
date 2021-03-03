@@ -17,7 +17,7 @@
     "mongojs": "^3.1.0",
     "morgan": "^1.10.0",
     "node-cron": "^2.0.3",
-    "pug": "^3.0.0",
+    "pug": "^3.0.1",
     "sanitize-html": "^2.2.0",
     "serve-favicon": "^2.5.0",
     "socket.io": "^3.0.4",
